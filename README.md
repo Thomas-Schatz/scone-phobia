@@ -1,4 +1,4 @@
-# sconephobia README
+# scone-phobia README
 
 ## About
 
@@ -24,13 +24,13 @@ The only type of errors currently analysed are 'minimal-pair' discrimination err
 The idea is to have, on the one hand, a somewhat static set of general-purpose utilities that make it easy to write new analysis and plot scripts cleanly and easily and, on the other hand, an open-ended set of such analysis and plot scripts.
 
 There are currently three packages (i.e. subfolders) in the src repository:
-  - util: this is where general-purpose utilities are placed (read more about those below)
+  - utils: this is where general-purpose utilities are placed (read more about those below)
   - analyses: scripts for carrying out a particular analysis (e.g. comparing discrimination errors obtained with a Japanese vs an American English model on American English /r/-/l/ discrimination) should go there
   - plots: scripts used to generate plots from the results of a particular analysis should go there
 
 ## General-purpose utilities
 
-This is the core part of the library, located in the src/util folder.
+This is the core part of the library, located in the src/utils folder.
 
 Content:
 
@@ -49,7 +49,7 @@ in a specified folder
      - parse filenames of ABXpy results files and various kind of derived files to get info about content (not stored as meta data, directly in filename).
      - load pre-computed mp-scores in df
      - apply a particular analysis and put results in a df (is this the only public part? (get_results)) -> described proposed programming pattern
-
+     - can use shared info about corpora (language, register, phone properties, etc.)
 
 ## Development
 

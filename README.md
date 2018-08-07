@@ -1,3 +1,5 @@
+# SCONE-PHOBIA
+
 ## About
 
 Perform analyses on results files obtained with the ABXpy library in a phone discrimination task BY (i.e. conditioned on) speaker and preceding and following contexts. (PHOne BY Speaker CONtext -> phobyscone -> scone-phobia)
@@ -52,16 +54,6 @@ in a specified folder
 ## Development
 
 User contributions are welcome, especially to propose new analyses and plot scripts.
-
-If you wish to contribute, first make your changes. Then run the following from the project root directory::
-
-    source internal/test.sh
-
-This will copy the template directory to a temporary directory, run the generation, then run tox. Any arguments passed will go directly to the tox command line, e.g.::
-
-    source internal/test.sh -e py27
-
-This command line would just test Python 2.7.
 
 
 ## Issues

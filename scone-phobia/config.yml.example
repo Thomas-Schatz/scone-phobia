@@ -1,0 +1,14 @@
+ # specify appropriate column names as they appear in your ABXpy results file.
+results-file-columns:
+  phone_1: phone_1
+  phone_2: phone_2
+  speaker: talker
+  prev-phone: prev-phone
+  next-phone: next-phone
+# specify a short id and descriptor for the minimal metadata necessary to uniquely
+# identify each of the ABXpy results file you want to analyse.
+primary-metadata:
+  model: model type  # an identifier for the type of model trained
+  train: training set  # model train set (None for untrained models)
+  test: test set  # dataset used for ABX
+  dis: dissimilarity  # dissimilarity function used for ABX

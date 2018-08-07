@@ -1,5 +1,3 @@
-# scone-phobia README
-
 ## About
 
 Perform analyses on results files obtained with the ABXpy library in a phone discrimination task BY (i.e. conditioned on) speaker and preceding and following contexts. (PHOne BY Speaker CONtext -> phobyscone -> scone-phobia)

@@ -24,7 +24,9 @@ cp ./scone-phobia/config.yml.example ./scone-phobia/config.yml
 ### Setup your data
 Appropriately setup the ABXpy results files you want to analyze on your computer.
 
-Here is an example using ABXpy results files from the https://osf.io/jpd74/ OSF project. You need to setup an OSF account, request access to the project then download the example files (AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__BUCtest__KLdis.txt and AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__BUCtest__KLdis.txt) at https://osf.io/qyrku/download and https://osf.io/9pwg2/download respectively.
+The main constraint is that the files should follow a naming scheme compatible with your config file, as described in [scone-phobia/utils/apply_analyses.py](scone-phobia/utils/apply_analyses.py) (The general idea is that the metadata for each file should be specified in the file name).
+
+Here is an example compatible with the template config file, using theABXpy results files from the https://osf.io/jpd74/ OSF project. You need to setup an OSF account, request access to the project and then download the example files (AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__BUCtest__KLdis.txt and AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__BUCtest__KLdis.txt) at https://osf.io/qyrku/download and https://osf.io/9pwg2/download respectively.
 
 Put these files in a directory of your choice, for example:
 ```
@@ -60,49 +62,23 @@ python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonom
 python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__BUCtest__KLdis.txt ../../ABXpy_mpscores/resampling 2 1
 python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__BUCtest__KLdis.txt ../../ABXpy_mpscores/resampling 2 2
 ```
-Note that it is important to use the same resampling scheme (resample numbers and random seeds) for each of the result files to be analyzed.
+Note that it is important for the validity of the results to use the same resampling scheme (number of resamples and random seeds) for each of the result files to be analyzed.
 
 ### Perform some analyses and plot the results
-Once minimal-pair scores have been computed (and optionally resampled), you can run existing analysis and plot scripts (located in the [scone-phobia/analyses](scone-phobia/analyses) and [scone-phobia/plots](scone-phobia/plots) folder respectively) or take inspiration from those scripts to write (and contribute!) your own analysis and plot scripts.
+Once minimal-pair scores have been computed (and optionally resampled), you can run existing [analysis](scone-phobia/analyses) and [plot](scone-phobia/plots) scripts or take inspiration from those scripts to write (and contribute!) your own analysis and plot scripts.
 
-For example:
+In our example, we can ???:primary-metadata?
 ```
-```
-
-For more about the organisation of the library and how to contribute, read below. 
-
+``` 
 
 ## Repo organisation
 
-The idea is to have, on the one hand, a somewhat static set of general-purpose utilities that make it easy to write new analysis and plot scripts cleanly and easily and, on the other hand, an open-ended set of such analysis and plot scripts.
+There is, on the one hand, a somewhat static set of general-purpose utilities that make it easy to write new analysis and plot scripts and, on the other hand, an open-ended set of such analysis and plot scripts.
 
-There are currently three packages (i.e. subfolders) in the src repository:
-  - utils: this is where general-purpose utilities are placed (read more about those below)
+There are currently three packages (i.e. subfolders) in the repository:
+  - utils: this is the core part of the library, where general-purpose utilities are placed
   - analyses: scripts for carrying out a particular analysis (e.g. comparing discrimination errors obtained with a Japanese vs an American English model on American English /r/-/l/ discrimination) should go there
   - plots: scripts used to generate plots from the results of a particular analysis should go there
-
-### General-purpose utilities
-
-This is the core part of the library, located in the src/utils folder.
-
-Content:
-
-  - phonediscri_byspkcontext_mpscores: library core, not public?  -> mp_scores.py
-
-      Functions for computing minimal pair scores from the results of ABX phone discrimination within speaker and context tasks.
-      This assumes that the columns in the item file that was used to generate the ABX task are 'talker', 'prev-phone', 'next-phone' and 'contrast' although this would be easy to modify if needed.
-  - Pre-computation scripts:
-    - precompute_mp_scores: -> 
-        command line interface calling phonediscri... to precompute mp-scores for all result files
-in a specified folder
-    - resample_mp_scores:
-        command line interface calling phonediscr... to obtain boostrap resamples of ABX minimal-pair scores. Should be run in parallel on a cluster (can be long).
-  - Script to access pre-computation results and apply analysis to it: analyze_mp_scores.py . sconephobia.apply_analysis(...)  
-    ABXresults_management: depends on how mp-scores are computed and stored (as per precompute and resample?)
-     - parse filenames of ABXpy results files and various kind of derived files to get info about content (not stored as meta data, directly in filename).
-     - load pre-computed mp-scores in df
-     - apply a particular analysis and put results in a df (is this the only public part? (get_results)) -> described proposed programming pattern
-     - can use shared info about corpora (language, register, phone properties, etc.)
 
 ## Development
 

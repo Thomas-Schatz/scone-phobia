@@ -26,13 +26,13 @@ Appropriately setup the ABXpy results files you want to analyze on your computer
 
 The main constraint is that the files should follow a naming scheme compatible with your config file, as described in [scone-phobia/utils/apply_analyses.py](scone-phobia/utils/apply_analyses.py) (The general idea is that the metadata for each file should be specified in the file name).
 
-Here is an example compatible with the template config file, using theABXpy results files from the https://osf.io/jpd74/ OSF project. You need to setup an OSF account, request access to the project and then download the example files (AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__BUCtest__KLdis.txt and AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__BUCtest__KLdis.txt) at https://osf.io/qyrku/download and https://osf.io/9pwg2/download respectively.
+Here is an example compatible with the template config file, using theABXpy results files from the https://osf.io/jpd74/ OSF project. You need to setup an OSF account, request access to the project and then download the example files (AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__WSJtest__KLdis.txt and AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__WSJtest__KLdis.txt) at https://osf.io/qyrku/download and https://osf.io/9pwg2/download respectively.
 
 Put these files in a directory of your choice, for example:
 ```
 mkdir ../ABXpy_results
-mv AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__BUCtest__KLdis.txt ../ABXpy_results/
-mv AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__BUCtest__KLdis.txt ../ABXpy_results/
+mv AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__WSJtest__KLdis.txt ../ABXpy_results/
+mv AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__WSJtest__KLdis.txt ../ABXpy_results/
 ```
 
 ### Prepare minimal-pair scores
@@ -56,24 +56,29 @@ Then we call the resampling script for each ABXpy result file individually with 
 
 For example, one way to get our n=4 resamples is to compute n=2 resamples two times with random seeds 1 and 2 respectively:
 ```
-python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__BUCtest__KLdis.txt ../../ABXpy_mpscores/resampling 2 1
-python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__BUCtest__KLdis.txt ../../ABXpy_mpscores/resampling 2 2
+python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__WSJtest__KLdis.txt ../../ABXpy_mpscores/resampling 2 1
+python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__WSJtest__KLdis.txt ../../ABXpy_mpscores/resampling 2 2
 
-python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__BUCtest__KLdis.txt ../../ABXpy_mpscores/resampling 2 1
-python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__BUCtest__KLdis.txt ../../ABXpy_mpscores/resampling 2 2
+python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__WSJtest__KLdis.txt ../../ABXpy_mpscores/resampling 2 1
+python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__WSJtest__KLdis.txt ../../ABXpy_mpscores/resampling 2 2
 ```
 Note that it is important for the validity of the results to use the same resampling scheme (number of resamples and random seeds) for each of the result files to be analyzed.
 
 ### Perform some analyses and plot the results
 Once minimal-pair scores have been computed (and optionally resampled), you can run existing [analysis](scone-phobia/analyses) and [plot](scone-phobia/plots) scripts or take inspiration from those scripts to write (and contribute!) your own analysis and plot scripts.
 
-In our example, we can ???:primary-metadata?
+As an example, let us look at discrimination of American English /r/ and /l/ by American English-trained vs Japanese-trained models. If our models are anything like humans, Japanese-trained models should have a much harder time making this distinction than American English trained ones.
+
+`AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__WSJtest__KLdis.txt` contains discrimination scores for an Automatic Speech Recognition (ASR) system trained on the Buckeye corpus of American English and tested on the Wall Street Journal corpus of American English. `AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__WSJtest__KLdis.txt` contains scores for the same ASR system tested on the same American English corpus, but trained on the Corpus of Spontaenous Japanese.
+
+The [RL_AmEnglish](./scone-phobia/analyses/RL_AmEnglish.py) analysis can be applied to these results.
+???:primary-metadata?
 ```
 ``` 
 
 ## Repo organisation
 
-There is, on the one hand, a somewhat static set of general-purpose utilities that make it easy to write new analysis and plot scripts and, on the other hand, an open-ended set of such analysis and plot scripts.
+There is, on the one hand, a somewhat static set of general-purpose utilities that makes it easy to write new analysis and plot scripts and, on the other hand, an open-ended set of such analysis and plot scripts.
 
 There are currently three packages (i.e. subfolders) in the repository:
   - utils: this is the core part of the library, where general-purpose utilities are placed
@@ -96,4 +101,4 @@ Please report any bugs or requests that you have using the GitHub issue tracker!
 
 ## Acknowledgments
 
-Based on the following python project template: https://github.com/seanfisk/python-project-template.
+Modified from the following python project template: https://github.com/seanfisk/python-project-template.

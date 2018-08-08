@@ -42,9 +42,25 @@ cd scone-phobia
 mkdir ../../ABXpy_mpscores
 python utils/precompute_mp_scores.py ../../ABXpy_results ../../ABXpy_mpscores
 ```
-To get variability estimates for our analyses, we can resample minimal-pair scores. This can take a while so we do it only for n=2 boostrap resamples here.
 
-For real-world use cases, you'd want to call [scone-phobia/utils/resample_mp_scores.py](scone-phobia/utils/resample_mp_scores.py) in parallel on a cluster for many different choice of xxx, and then copy the results files back to your xxx/resampling folder.
+### Resample minimal-pair scores (optional)
+To get variability estimates for our analyses, we can resample minimal-pair scores. This can take a while so we do it only for n=4 boostrap resamples here. 
+
+First we need to create a `resampling` subfolder in the folder where we put the minimal-pair scores:
+```
+mkdir ../../ABXpy_mpscores/resampling/
+```
+Then we call the resampling script for each ABXpy result file individually with two arguments numerical arguments. The first one indicates the number of resamples to be computed and the second one is used both as a random seed for the resampling and as a unique id for the resampled scores. This allows to easily split the computational burden of resmapling into multiple independent jobs that can be run in parallel.
+
+For example, one way to get our n=4 resamples is to compute n=2 resamples two times with random seeds 1 and 2 respectively:
+```
+python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__BUCtest__KLdis.txt ../../ABXpy_mpscores/resampling 2 1
+python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__BUCtest__KLdis.txt ../../ABXpy_mpscores/resampling 2 2
+
+python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__BUCtest__KLdis.txt ../../ABXpy_mpscores/resampling 2 1
+python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__BUCtest__KLdis.txt ../../ABXpy_mpscores/resampling 2 2
+```
+Note that it is important to use the same resampling scheme (resample numbers and random seeds) for each of the result files to be analyzed.
 
 ### Perform some analyses and plot the results
 Once minimal-pair scores have been computed (and optionally resampled), you can run existing analysis and plot scripts (located in the [scone-phobia/analyses](scone-phobia/analyses) and [scone-phobia/plots](scone-phobia/plots) folder respectively) or take inspiration from those scripts to write (and contribute!) your own analysis and plot scripts.

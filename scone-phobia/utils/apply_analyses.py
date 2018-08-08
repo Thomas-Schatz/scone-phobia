@@ -36,12 +36,14 @@ import os.path as path
 import mp_scores
 
 
-def load_config_from_file(f):
+def load_cfg_from_file(f):
     # decorator that will load keyword cfg argument
     # from "../config.yml" unless it is specified explicitly
     def wrapper(*args, **kwargs):
         if not('cfg' in kwargs) or (kwargs['cfg'] is None):
-            with open("../config.yml", 'r') as ymlfile:
+            dir = path.dirname(os.path.realpath(__file__))
+            cfg_file = path.join(dir, "..", "config.yml")
+            with open(cfg_file, 'r') as ymlfile:
                 kwargs['cfg'] = yaml.load(ymlfile)['primary-metadata']
         return f(*args, **kwargs)
     return wrapper
@@ -108,7 +110,7 @@ def suffix_split(token, cfg, err_message):
     return key[0]
 
 
-@load_config_from_file
+@load_cfg_from_file
 def parse_res_fname(fpath, cfg=None, derived_metadata=None):
     name, _ = path.split(fpath).splitext()
     err_message = ("Results filename {} is not correctly formatted."
@@ -130,7 +132,7 @@ def parse_res_fname(fpath, cfg=None, derived_metadata=None):
     return res
 
 
-@load_config_from_file
+@load_cfg_from_file
 def parse_bootres_fname(name, cfg=None, derived_metadata=None):
     name, _ = path.split(fpath).splitext()
     err_message = ("Bootstrap results filename filename {} is not correctly"

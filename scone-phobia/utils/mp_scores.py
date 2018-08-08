@@ -28,12 +28,14 @@ import pickle
 import yaml
 
 
-def load_config_from_file(f):
+def load_cfg_from_file(f):
     # decorator that will load keyword cfg argument
     # from "../config.yml" unless it is specified explicitly
     def wrapper(*args, **kwargs):
         if not('cfg' in kwargs) or (kwargs['cfg'] is None):
-            with open("../config.yml", 'r') as ymlfile:
+            dir = path.dirname(os.path.realpath(__file__))
+            cfg_file = path.join(dir, "..", "config.yml")
+            with open(cfg_file, 'r') as ymlfile:
                 kwargs['cfg'] = yaml.load(ymlfile)['results-file-columns']
         return f(*args, **kwargs)
     return wrapper

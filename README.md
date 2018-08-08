@@ -14,15 +14,18 @@ The only type of errors currently analysed are 'minimal-pair' discrimination err
 First clone the repository:
 ```
 git clone git@github.com:Thomas-Schatz/scone-phobia.git
-cd sconephobia
+cd scone-phobia
 ```
 Then create an appropriate config file. You can take inspiration from the [template config file](scone-phobia/config.yml.example) or use it directly by doing:
 ```
-cp ./sconephobia/config.yml.example ./sconephobia/config.yml
+cp ./scone-phobia/config.yml.example ./scone-phobia/config.yml
 ```
 
 ### Setup your data
-Appropriately setup the ABXpy results files you want to analyse on your computer. Here is an example using an ABXpy results file from the https://osf.io/jpd74/ OSF project. You need to setup an OSF account, request access to the project then download the example files (AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__BUCtest__KLdis.txt and AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__BUCtest__KLdis.txt) at https://osf.io/qyrku/download and https://osf.io/9pwg2/download respectively.
+Appropriately setup the ABXpy results files you want to analyze on your computer.
+
+Here is an example using ABXpy results files from the https://osf.io/jpd74/ OSF project. You need to setup an OSF account, request access to the project then download the example files (AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__BUCtest__KLdis.txt and AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__BUCtest__KLdis.txt) at https://osf.io/qyrku/download and https://osf.io/9pwg2/download respectively.
+
 Put these files in a directory of your choice, for example:
 ```
 mkdir ../ABXpy_results
@@ -32,15 +35,23 @@ mv AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__BUCtest__KLdis.txt ../ABXpy_results/
 
 ### Prepare minimal-pair scores
 Computing minimal-pair discrimination errors can take a while, so we do it once and for all.
+
 Using Python with appropriate libraries installed (see [requirements.txt](requirements.txt), the latest [python3-anaconda](https://www.anaconda.com/download/) should be more than enough for example), run:
 ```
 cd scone-phobia
-python utils/precompute_mp_scores.py ...
+mkdir ../../ABXpy_mpscores
+python utils/precompute_mp_scores.py ../../ABXpy_results ../../ABXpy_mpscores
 ```
-To get variability estimates for our analyses, we can resample minimal-pair scores. This can take a while so we do it only for n=2 boostrap resamples here. For real-world use cases, you'd want to call [scone-phobia/utils/resample_mp_scores.py](scone-phobia/utils/resample_mp_scores.py) in parallel on a cluster for many different choice of xxx, and then copy the results files back to your xxx/resampling folder.
+To get variability estimates for our analyses, we can resample minimal-pair scores. This can take a while so we do it only for n=2 boostrap resamples here.
+
+For real-world use cases, you'd want to call [scone-phobia/utils/resample_mp_scores.py](scone-phobia/utils/resample_mp_scores.py) in parallel on a cluster for many different choice of xxx, and then copy the results files back to your xxx/resampling folder.
 
 ### Perform some analyses and plot the results
 Once minimal-pair scores have been computed (and optionally resampled), you can run existing analysis and plot scripts (located in the [scone-phobia/analyses](scone-phobia/analyses) and [scone-phobia/plots](scone-phobia/plots) folder respectively) or take inspiration from those scripts to write (and contribute!) your own analysis and plot scripts.
+
+For example:
+```
+```
 
 For more about the organisation of the library and how to contribute, read below. 
 

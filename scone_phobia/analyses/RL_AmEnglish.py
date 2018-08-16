@@ -5,8 +5,9 @@ Created on Wed Jun 27 11:07:59 2018
 @author: Thomas Schatz
 """
 
-import phonediscri_byspkcontext_mpscores as mp_scores
-import ABXresults_management as res_manager
+
+import mp_scores
+import apply_analyses
 import numpy as np
 import pandas
 import corpora
@@ -56,5 +57,5 @@ resampling = True  # set to True to get errobars
 
 analysis = lambda df: AE_rl(df)
 analysis_name = "RL_AmEnglish"
-get_results = lambda: res_manager.get_results(analysis, analysis_name, root,
+get_results = lambda: apply_analyses.get_results(analysis, analysis_name, root,
                                               model_types, resampling)

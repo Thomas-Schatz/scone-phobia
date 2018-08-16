@@ -85,10 +85,11 @@ The [RL_AmEnglish](./scone-phobia/analyses/RL_AmEnglish.py) analysis can be appl
 
 There is, on the one hand, a somewhat static set of general-purpose utilities that makes it easy to write new analysis and plot scripts and, on the other hand, an open-ended set of such analysis and plot scripts.
 
-There are currently three packages (i.e. subfolders) in the repository:
-  - utils: this is the core part of the library, where general-purpose utilities are placed
-  - analyses: scripts for carrying out a particular analysis (e.g. comparing discrimination errors obtained with a Japanese vs an American English model on American English /r/-/l/ discrimination) should go there
-  - plots: scripts used to generate plots from the results of a particular analysis should go there
+There are currently four packages (i.e. subfolders) in the repository:
+  - `utils`: this is the core part of the library, where general-purpose utilities are placed
+  - `metadata`: this is a place where metadata that is not directly stored in the ABXpy result filenames can be stored and made available to analysis and plot scripts. Currently it contains only the `corpora.py` module which specifies the language, register, consonants and vowels for each corpus of speech recordings we have been using.
+  - `analyses`: scripts for carrying out a particular analysis (e.g. comparing discrimination errors obtained with a Japanese vs an American English model on American English /r/-/l/ discrimination) should go there
+  - `plots`: scripts used to generate plots from the results of a particular analysis should go there
 
 ## Development
 

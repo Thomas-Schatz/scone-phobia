@@ -2,7 +2,7 @@
 
 ## About
 
-Perform analyses on results files obtained with the ABXpy library in a phone discrimination task BY (i.e. conditioned on) speaker and preceding and following contexts. (PHOne BY Speaker CONtext -> phobyscone -> scone-phobia)
+Perform analyses on results files obtained with the [ABXpy library](https://github.com/bootphon/ABXpy) in a phone discrimination task BY (i.e. conditioned on) speaker and preceding and following contexts (PHOne BY Speaker CONtext -> phobyscone -> scone-phobia). See [Schatz et al. (2013)](http://thomas.schatz.cogserver.net/wp-content/uploads/2014/10/Schatz2013.pdf) and [Schatz (2016), PhD thesis](http://thomas.schatz.cogserver.net/wp-content/uploads/2016/10/Schatz2016.pdf) for background about machine ABX discrimination tasks.
 
 This code can be used to analyze data from the OSF project https://osf.io/jpd74/ (discrimination of English and Japanese phonetic contrasts based on various models of speech processing trained either on English or Japanese).
 

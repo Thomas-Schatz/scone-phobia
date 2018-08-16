@@ -77,14 +77,6 @@ The first one, for example, would be parsed into the following list of pairs:
      ('test set', 'CSJ'),
      ('dissimilarity', 'KL')]
 
-Additional (key, value) metadata pairs can be added to the primary ones by providing
-a 'derived_metadata' function taking as argument the above list of pairs and deriving
-additional (key, value) pairs to be added to it. E.g. it could find out the training
-and test set languages based on the names of these sets and return:
-
-    [('training language, 'American English'),
-     ('test language, 'Japanese')]
-
 For bootstrap related files, filenames will look like:
 
     HMM-GMMmodel__WSJtrain__CSJtest__KLdis__batchsize50__batch3.pickle
@@ -112,7 +104,7 @@ def suffix_split(token, cfg, err_message):
 
 
 @load_cfg_from_file
-def parse_res_fname(fpath, cfg=None, derived_metadata=None):
+def parse_res_fname(fpath, cfg=None):
     name, _ = path.splitext(path.split(fpath)[1])
     err_message = ("Results filename {} is not correctly formatted."
                    " Check your config file and "
@@ -128,13 +120,11 @@ def parse_res_fname(fpath, cfg=None, derived_metadata=None):
         assert not key in used_keys, err_message
         used_keys.append(key)
         res.append((cfg[key], value))
-    if not(derived_metadata is None):
-        res = res + derived_metadata(res)
     return res
 
 
 @load_cfg_from_file
-def parse_bootres_fname(name, cfg=None, derived_metadata=None):
+def parse_bootres_fname(name, cfg=None):
     name, _ = path.splitext(path.split(fpath)[1])
     err_message = ("Bootstrap results filename filename {} is not correctly"
                    " formatted. Check your config file and "
@@ -143,8 +133,7 @@ def parse_bootres_fname(name, cfg=None, derived_metadata=None):
     N = len(cfg)
     tokens = name.split('__')
     assert len(tokens) == N+2, err_message
-    properties = parse_res_fname('__'.join(tokens[:N]), cfg=cfg,
-                                 derived_metadata=derived_metadata)
+    properties = parse_res_fname('__'.join(tokens[:N]), cfg=cfg)
     batch = tokens[-1]
     assert len(batch) >= 5 and batch[:5] == 'batch', batch
     batch = int(batch[5:])
@@ -161,10 +150,9 @@ def parse_bootres_fname(name, cfg=None, derived_metadata=None):
 ## Fetch and analyse data  #
 ############################
 
-def fetch_data(analysis, mp_folder, filt=None, encoding=None,
-               derived_metadata=None):
+def fetch_data(analysis, mp_folder, filt=None, encoding=None):
     """Use the above to get just the right data"""
-    get_metadata = lambda x: parse_res_fname(x, derived_metadata=derived_metadata)
+    get_metadata = lambda x: parse_res_fname(x)
     df = mp_scores.load_mp_errors(mp_folder,
                                   get_metadata,
                                   filt=filt,
@@ -180,7 +168,7 @@ def fetch_resampled_data(analysis,
                          encoding=None):
     # Getting resampled minimal-pair scores to estimate variability.
     # This can take time so results are saved once they are computed
-    get_metadata = lambda x: parse_bootres_fname(x, derived_metadata=derived_metadata)
+    get_metadata = lambda x: parse_bootres_fname(x)
     boot_dfs = mp_scores.resample_analysis_cached(resampling_file,
                                                   analysis,
                                                   resampled_mp_folder,
@@ -198,8 +186,7 @@ def fetch_resampled_data(analysis,
 # Also could want to do resampling with more granularity if resampling are missing
 # for some of the models.
 def apply_analysis(analysis, mp_folder,
-                   model_types, derived_metadata=None,
-                   resampling=True, analysis_folder=None,
+                   model_types, resampling=True, analysis_folder=None,
                    pickle_encoding=None, resampled_pickle_encoding="latin1"):
     """
     analysis: function that takes a pandas dataframe containing all
@@ -213,9 +200,6 @@ def apply_analysis(analysis, mp_folder,
         at least one of the identifiers in their filename will be included in the 
         analysis. Should probably be modified if we stop relying on filenames for
         specifying primary metadata.
-    derived_metadata: function that takes a list of (key, value) pairs containing
-        metadata describing a results file and returns another list of (key, value)
-        pairs containing additional metadata to be used in the analysis.
     resampling: whether or not to use resampling. Currently, this only adds
         resampling-based standard deviation estimate to the analysis results,
         but it would be easy to compute and other resampled quantities. E.g. pairwise

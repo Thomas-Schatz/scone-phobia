@@ -21,6 +21,11 @@ Then create an appropriate config file. You can take inspiration from the [templ
 cp ./scone-phobia/config.yml.example ./scone-phobia/config.yml
 ```
 
+Finally make sure that the `scone_phobia` module is on your PYTHONPATH (no actual install is needed, although an appropriate `setup.py` could easily be written if somebody wants a hard install):
+```
+export PYTHONPATH="${PYTHONPATH}:${PWD}"
+```
+
 ### Setup your data
 Appropriately setup the ABXpy results files you want to analyze on your computer.
 

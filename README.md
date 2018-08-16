@@ -21,6 +21,11 @@ Then create an appropriate config file. You can take inspiration from the [templ
 cp ./scone-phobia/config.yml.example ./scone-phobia/config.yml
 ```
 
+Finally make sure that the `scone_phobia` module is on your PYTHONPATH (no actual install is needed, although an appropriate `setup.py` could easily be written if somebody wants a hard install):
+```
+export PYTHONPATH="${PYTHONPATH}:${PWD}"
+```
+
 ### Setup your data
 Appropriately setup the ABXpy results files you want to analyze on your computer.
 
@@ -40,9 +45,9 @@ Computing minimal-pair discrimination errors can take a while, so we do it once 
 
 Using Python with appropriate libraries installed (see [requirements.txt](requirements.txt), the latest [python3-anaconda](https://www.anaconda.com/download/) should be more than enough for example), run:
 ```
-cd scone-phobia
-mkdir ../../ABXpy_mpscores
-python utils/precompute_mp_scores.py ../../ABXpy_results ../../ABXpy_mpscores
+cd scone_phobia
+mkdir ../../mpscores
+python utils/precompute_mp_scores.py ../../ABXpy_results ../../mpscores
 ```
 
 ### Resample minimal-pair scores (optional)
@@ -50,17 +55,17 @@ To get variability estimates for our analyses, we can resample minimal-pair scor
 
 First we need to create a `resampling` subfolder in the folder where we put the minimal-pair scores:
 ```
-mkdir ../../ABXpy_mpscores/resampling/
+mkdir ../../mpscores/resampling/
 ```
-Then we call the resampling script for each ABXpy result file individually with two arguments numerical arguments. The first one indicates the number of resamples to be computed and the second one is used both as a random seed for the resampling and as a unique id for the resampled scores. This allows to easily split the computational burden of resmapling into multiple independent jobs that can be run in parallel.
+Then we call the resampling script for each ABXpy result file individually with two arguments numerical arguments. The first one indicates the number of resamples to be computed and the second one is used both as a random seed for the resampling and as a unique id for the resampled scores. This allows to easily split the computational burden of resampling into multiple independent jobs that can be run in parallel.
 
 For example, one way to get our n=4 resamples is to compute n=2 resamples two times with random seeds 1 and 2 respectively:
 ```
-python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__WSJtest__KLdis.txt ../../ABXpy_mpscores/resampling 2 1
-python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__WSJtest__KLdis.txt ../../ABXpy_mpscores/resampling 2 2
+python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__WSJtest__KLdis.txt ../../mpscores/resampling 2 1
+python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__WSJtest__KLdis.txt ../../mpscores/resampling 2 2
 
-python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__WSJtest__KLdis.txt ../../ABXpy_mpscores/resampling 2 1
-python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__WSJtest__KLdis.txt ../../ABXpy_mpscores/resampling 2 2
+python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__WSJtest__KLdis.txt ../../mpscores/resampling 2 1
+python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__WSJtest__KLdis.txt ../../mpscores/resampling 2 2
 ```
 Note that it is important for the validity of the results to use the same resampling scheme (number of resamples and random seeds) for each of the result files to be analyzed.
 
@@ -80,10 +85,11 @@ The [RL_AmEnglish](./scone-phobia/analyses/RL_AmEnglish.py) analysis can be appl
 
 There is, on the one hand, a somewhat static set of general-purpose utilities that makes it easy to write new analysis and plot scripts and, on the other hand, an open-ended set of such analysis and plot scripts.
 
-There are currently three packages (i.e. subfolders) in the repository:
-  - utils: this is the core part of the library, where general-purpose utilities are placed
-  - analyses: scripts for carrying out a particular analysis (e.g. comparing discrimination errors obtained with a Japanese vs an American English model on American English /r/-/l/ discrimination) should go there
-  - plots: scripts used to generate plots from the results of a particular analysis should go there
+There are currently four packages (i.e. subfolders) in the repository:
+  - `utils`: this is the core part of the library, where general-purpose utilities are placed
+  - `metadata`: this is a place where metadata that is not directly stored in the ABXpy result filenames can be stored and made available to analysis and plot scripts. Currently it contains only the `corpora.py` module which specifies the language, register, consonants and vowels for each corpus of speech recordings we have been using.
+  - `analyses`: scripts for carrying out a particular analysis (e.g. comparing discrimination errors obtained with a Japanese vs an American English model on American English /r/-/l/ discrimination) should go there
+  - `plots`: scripts used to generate plots from the results of a particular analysis should go there
 
 ## Development
 

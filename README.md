@@ -57,7 +57,7 @@ First we need to create a `resampling` subfolder in the folder where we put the 
 ```
 mkdir ../../mpscores/resampling/
 ```
-Then we call the resampling script for each ABXpy result file individually with two arguments numerical arguments. The first one indicates the number of resamples to be computed and the second one is used both as a random seed for the resampling and as a unique id for the resampled scores. This allows to easily split the computational burden of resmapling into multiple independent jobs that can be run in parallel.
+Then we call the resampling script for each ABXpy result file individually with two arguments numerical arguments. The first one indicates the number of resamples to be computed and the second one is used both as a random seed for the resampling and as a unique id for the resampled scores. This allows to easily split the computational burden of resampling into multiple independent jobs that can be run in parallel.
 
 For example, one way to get our n=4 resamples is to compute n=2 resamples two times with random seeds 1 and 2 respectively:
 ```

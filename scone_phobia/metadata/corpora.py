@@ -4,7 +4,16 @@ Created on Wed Jun 27 12:18:50 2018
 
 @author: Thomas Schatz
 
-Useful info about the various corpora we use.
+Useful info about corpora of speech recordings.
+
+Currently there are four functions, which take the
+corpus name as input and respectively return the:
+  - language
+  - register
+  - list of consonants
+  - list of vowels.
+
+To add new corpora just extend these functions appropriately.
 
 We might want to get the info directly from spock-formatted files at some point.
 """
@@ -115,6 +124,7 @@ ipa_eng = {'B': 'b',
            'UW': 'uː'}
 
 ipas = {'American English': ipa_eng, 'Japanese': ipa_jap}
+
 
 def consonants(lang, ipa=False):
     if lang == 'American English':

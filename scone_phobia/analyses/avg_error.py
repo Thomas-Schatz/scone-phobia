@@ -4,13 +4,15 @@ Created on Wed Jun 27 12:01:02 2018
 
 @author: Thomas Schatz
 
-Average errors on C, V or all contrasts (not involving SIL, SPN or NSN)
+Average errors on C, V or all contrasts (excluding silence/noise marker)
 """
 
-import ABXresults_management as res_manager
+
+from scone_phobia import apply_analysis
+import scone_phobia.metadata.corpora as corpora
 import numpy as np
 import pandas
-import corpora
+# import corpora
 
 
 def average_error(df):
@@ -45,19 +47,32 @@ def average_error(df):
 ## Main ##
 ##########
 
+# from python
+import scone_phobia.analyses.avg_error as avg_error
+import scone_phobia.plots.avg_error as plt_avg_error
+mp_folder = ...
+avg_error.run(mp_folder, ...)
+plt_avg_error.plot(...)
+
+
+
+mp_folder = '/Users/admin/Documents/PhD/Code/test/mpscores'
+
 model_types = ['dpgmm_vtln_vad', 'AMtri1_sat_small_LMtri1satsmall',
                'mfcc_novtln', 'mfcc_vtln', 'BNF', 'AMtri2_sat_LMmono',
                'AMnnet1_tri2_smbr_LMmono']  # list of models to be analysed
 
-root = '/Users/admin/Documents/PhD/Code/perceptual-tuning-results/ABX/'  #HMMvsDNN/tri2vsnnet1/'
-resampling = True  # set to True to get errobars
-                    # you need to have run resample_mp_score.py before
-
-
+# set to True to get errobars, you need to have run resample_mp_score.py before
+resampling = True  
 analysis = lambda df: average_error(df)
-analysis_name = "avg_error"
-get_results = lambda: res_manager.get_results(analysis, analysis_name, root,
-                                              model_types, resampling)
+
+model_types = ['dpgmm_vtln_vad', 'AMtri1_sat_small_LMtri1satsmall',
+               'mfcc_novtln', 'mfcc_vtln', 'BNF', 'AMtri2_sat_LMmono',
+               'AMnnet1_tri2_smbr_LMmono']  # list of models to be analysed
+
+res = apply_analysis(analysis, mp_folder, model_types,
+                     resampling=resampling, analysis_folder='')
+df.save(res)
 
 
 

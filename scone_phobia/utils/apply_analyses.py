@@ -33,7 +33,8 @@ library being called by several libraries applied to particular tasks.
 
 import pandas
 import os.path as path
-import mp_scores
+import scone_phobia.utils.mp_scores as mp_scores
+import yaml
 
 
 def load_cfg_from_file(f):
@@ -41,7 +42,7 @@ def load_cfg_from_file(f):
     # from "../config.yml" unless it is specified explicitly
     def wrapper(*args, **kwargs):
         if not('cfg' in kwargs) or (kwargs['cfg'] is None):
-            dir = path.dirname(os.path.realpath(__file__))
+            dir = path.dirname(path.realpath(__file__))
             cfg_file = path.join(dir, "..", "config.yml")
             with open(cfg_file, 'r') as ymlfile:
                 kwargs['cfg'] = yaml.load(ymlfile)['primary-metadata']
@@ -105,14 +106,14 @@ def suffix_split(token, cfg, err_message):
     for key in cfg:
         if len(token) >= len(key):
             if token[-len(key):] == key:
-                matches.append(key)
-    assert len(key) == 1, err_message
-    return key[0]
+                matches.append((key, token))
+    assert len(matches) == 1, err_message
+    return matches[0]
 
 
 @load_cfg_from_file
 def parse_res_fname(fpath, cfg=None, derived_metadata=None):
-    name, _ = path.split(fpath).splitext()
+    name, _ = path.splitext(path.split(fpath)[1])
     err_message = ("Results filename {} is not correctly formatted."
                    " Check your config file and "
                    "formatting instructions in analyze_mp_scores.py."
@@ -134,7 +135,7 @@ def parse_res_fname(fpath, cfg=None, derived_metadata=None):
 
 @load_cfg_from_file
 def parse_bootres_fname(name, cfg=None, derived_metadata=None):
-    name, _ = path.split(fpath).splitext()
+    name, _ = path.splitext(path.split(fpath)[1])
     err_message = ("Bootstrap results filename filename {} is not correctly"
                    " formatted. Check your config file and "
                    "formatting instructions in analyze_mp_scores.py."

@@ -6,8 +6,8 @@ Created on Wed Jun 27 11:07:59 2018
 """
 
 
-import mp_scores
-import apply_analyses
+from scone_phobia import apply_analysis
+import scone_phobia.utils.mp_scores as mp_scores
 import numpy as np
 import pandas
 import corpora
@@ -57,5 +57,5 @@ resampling = True  # set to True to get errobars
 
 analysis = lambda df: AE_rl(df)
 analysis_name = "RL_AmEnglish"
-get_results = lambda: apply_analyses.get_results(analysis, analysis_name, root,
-                                              model_types, resampling)
+get_results = lambda: apply_analysis(analysis, analysis_name, root,
+                                     model_types, resampling)

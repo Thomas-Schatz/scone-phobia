@@ -15,7 +15,7 @@ Usage example:
 
 import argparse
 import os.path as path
-import mp_scores
+import scone_phobia.utils.mp_scores as mp_scores
 
 
 if __name__ == '__main__':

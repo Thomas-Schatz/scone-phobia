@@ -12,6 +12,8 @@ The main function is apply_analysis, see readme.md for usage example.
 
 In the current implementation, the metadata associated with each minimal-pair
 file can be stored directly in the name of the file, following a scheme described below.
+Note that this scheme is parameterized by the 'primary-metadata' section of
+the config file.
 At minima, the filename should be sufficient to deduce all relevant metadata for carrying
 out the analyses and plots.
 The scone_phobia/metadata folder can be used to store information associating filename
@@ -23,7 +25,7 @@ the analysis results), this folder should also contain a 'resampling' subfolder
 where pickles containing resample of the minimal-pair scores are stored.
 
 These minimal-pair scores pickles can be obtained with precompute_mp_scores.py
-and resample of those with resample_mp_scores.py. Note that both these script
+and resample of those with resample_mp_scores.py. Note that both these scripts
 will name pickles based on the name of the original ABXpy results filename,
 so it's probably a good idea to name those original results files in accordance
 with the naming scheme described below.

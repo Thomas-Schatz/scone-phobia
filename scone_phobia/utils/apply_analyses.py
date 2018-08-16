@@ -11,7 +11,11 @@ for ABX tasks with the following structure:
 The main function is apply_analysis, see readme.md for usage example.
 
 In the current implementation, the metadata associated with each minimal-pair
-file is stored directly in the name of the file, following a scheme described below.
+file can be stored directly in the name of the file, following a scheme described below.
+At minima, the filename should be sufficient to deduce all relevant metadata for carrying
+out the analyses and plots.
+The scone_phobia/metadata folder can be used to store information associating filename
+components with further metadata. It can be useful to keep filenames from getting too long.
 
 This code requires a folder where pickles containing the minimal-pair scores are stored.
 If resampling of the scores is needed (e.g. to obtain estimate of variability for

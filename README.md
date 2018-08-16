@@ -46,8 +46,8 @@ Computing minimal-pair discrimination errors can take a while, so we do it once 
 Using Python with appropriate libraries installed (see [requirements.txt](requirements.txt), the latest [python3-anaconda](https://www.anaconda.com/download/) should be more than enough for example), run:
 ```
 cd scone_phobia
-mkdir ../../ABXpy_mpscores
-python utils/precompute_mp_scores.py ../../ABXpy_results ../../ABXpy_mpscores
+mkdir ../../mpscores
+python utils/precompute_mp_scores.py ../../ABXpy_results ../../mpscores
 ```
 
 ### Resample minimal-pair scores (optional)
@@ -55,17 +55,17 @@ To get variability estimates for our analyses, we can resample minimal-pair scor
 
 First we need to create a `resampling` subfolder in the folder where we put the minimal-pair scores:
 ```
-mkdir ../../ABXpy_mpscores/resampling/
+mkdir ../../mpscores/resampling/
 ```
 Then we call the resampling script for each ABXpy result file individually with two arguments numerical arguments. The first one indicates the number of resamples to be computed and the second one is used both as a random seed for the resampling and as a unique id for the resampled scores. This allows to easily split the computational burden of resmapling into multiple independent jobs that can be run in parallel.
 
 For example, one way to get our n=4 resamples is to compute n=2 resamples two times with random seeds 1 and 2 respectively:
 ```
-python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__WSJtest__KLdis.txt ../../ABXpy_mpscores/resampling 2 1
-python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__WSJtest__KLdis.txt ../../ABXpy_mpscores/resampling 2 2
+python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__WSJtest__KLdis.txt ../../mpscores/resampling 2 1
+python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__WSJtest__KLdis.txt ../../mpscores/resampling 2 2
 
-python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__WSJtest__KLdis.txt ../../ABXpy_mpscores/resampling 2 1
-python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__WSJtest__KLdis.txt ../../ABXpy_mpscores/resampling 2 2
+python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__WSJtest__KLdis.txt ../../mpscores/resampling 2 1
+python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__WSJtest__KLdis.txt ../../mpscores/resampling 2 2
 ```
 Note that it is important for the validity of the results to use the same resampling scheme (number of resamples and random seeds) for each of the result files to be analyzed.
 

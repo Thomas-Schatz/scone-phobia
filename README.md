@@ -65,7 +65,7 @@ python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonom
 Note that it is important for the validity of the results to use the same resampling scheme (number of resamples and random seeds) for each of the result files to be analyzed.
 
 ### Perform some analyses and plot the results
-Once minimal-pair scores have been computed (and optionally resampled), you can run existing [analysis](scone-phobia/analyses) and [plot](scone-phobia/plots) scripts (depending on the nature of your data, not all scripts might be applicable, look at the comments within each script for applicability conditions) or take inspiration from those scripts to write (and contribute!) your own analysis and plot scripts.
+Once minimal-pair scores have been computed (and optionally resampled), you can run existing [analysis](scone-phobia/analyses) and [plot](scone-phobia/plots) scripts (depending on the nature of your data, not all scripts might be applicable, look at the comments within each script for applicability conditions). You can also take inspiration from the existing examples to write (and contribute!) your own analysis and plot scripts.
 
 As an example, let us look at discrimination of American English /r/ and /l/ by American English-trained vs Japanese-trained models. If our models are anything like humans, Japanese-trained models should have a much harder time making this distinction than American English trained ones.
 

@@ -67,7 +67,7 @@ Note that it is important for the validity of the results to use the same resamp
 ### Perform some analyses and plot the results
 Once minimal-pair scores have been computed (and optionally resampled), you can run existing [analysis](scone-phobia/analyses) and [plot](scone-phobia/plots) scripts (depending on the nature of your data, not all scripts might be applicable, look at the comments within each script for applicability conditions). You can also take inspiration from the existing examples to write (and contribute!) your own analysis and plot scripts.
 
-As an example, let us look at discrimination of American English /r/ and /l/ by American English-trained vs Japanese-trained models. If our models are anything like humans, Japanese-trained models should have a much harder time making this distinction than American English trained ones.
+As an example, let us look at discrimination of American English /r/ and /l/ by American English-trained vs Japanese-trained models. If our models are anything like humans, Japanese-trained models should have a much harder time making this distinction than American English trained ones (see e.g. https://en.wikipedia.org/wiki/Perception_of_English_/r/_and_/l/_by_Japanese_speakers#Perception).
 
 `AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__WSJtest__KLdis.txt` contains discrimination scores for an Automatic Speech Recognition (ASR) system trained on the Buckeye corpus of American English and tested on the Wall Street Journal corpus of American English. `AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__WSJtest__KLdis.txt` contains scores for the same ASR system tested on the same American English corpus, but trained on the Corpus of Spontaenous Japanese.
 

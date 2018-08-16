@@ -40,7 +40,7 @@ Computing minimal-pair discrimination errors can take a while, so we do it once 
 
 Using Python with appropriate libraries installed (see [requirements.txt](requirements.txt), the latest [python3-anaconda](https://www.anaconda.com/download/) should be more than enough for example), run:
 ```
-cd scone-phobia
+cd scone_phobia
 mkdir ../../ABXpy_mpscores
 python utils/precompute_mp_scores.py ../../ABXpy_results ../../ABXpy_mpscores
 ```

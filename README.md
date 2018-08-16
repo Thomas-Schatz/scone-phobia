@@ -29,7 +29,7 @@ export PYTHONPATH="${PYTHONPATH}:${PWD}"
 ### Setup your data
 Appropriately setup the ABXpy results files you want to analyze on your computer.
 
-The main constraint is that the files should follow a naming scheme compatible with your config file, as described in [scone-phobia/utils/apply_analyses.py](scone-phobia/utils/apply_analyses.py) (The general idea is that the metadata for each file should be specified in the file name, or at least be deducible from it).
+The main constraint is that the files should follow a naming scheme compatible with your config file, as described in [scone_phobia/utils/apply_analyses.py](scone-phobia/utils/apply_analyses.py) (The general idea is that the metadata for each file should be specified in the file name, or at least be deducible from it).
 
 Here is an example compatible with the template config file, using theABXpy results files from the https://osf.io/jpd74/ OSF project. You need to setup an OSF account, request access to the project and then download the example files (AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__WSJtest__KLdis.txt and AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__WSJtest__KLdis.txt) at https://osf.io/qyrku/download and https://osf.io/9pwg2/download respectively.
 
@@ -70,13 +70,13 @@ python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonom
 Note that it is important for the validity of the results to use the same resampling scheme (number of resamples and random seeds) for each of the result files to be analyzed.
 
 ### Perform some analyses and plot the results
-Once minimal-pair scores have been computed (and optionally resampled), you can run existing [analysis](scone-phobia/analyses) and [plot](scone-phobia/plots) scripts (depending on the nature of your data, not all scripts might be applicable, look at the comments within each script for applicability conditions). You can also take inspiration from the existing examples to write (and contribute!) your own analysis and plot scripts.
+Once minimal-pair scores have been computed (and optionally resampled), you can run existing [analysis](scone_phobia/analyses) and [plot](scone_phobia/plots) scripts (depending on the nature of your data, not all scripts might be applicable, look at the comments within each script for applicability conditions). You can also take inspiration from the existing examples to write (and contribute!) your own analysis and plot scripts.
 
 As an example, let us look at discrimination of American English /r/ and /l/ by American English-trained vs Japanese-trained models. If our models are [anything like humans](https://en.wikipedia.org/wiki/Perception_of_English_/r/_and_/l/_by_Japanese_speakers#Perception), Japanese-trained models should have a much harder time making this distinction than American English trained ones.
 
 `AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__WSJtest__KLdis.txt` contains discrimination scores for an Automatic Speech Recognition (ASR) system trained on the Buckeye corpus of American English and tested on the Wall Street Journal corpus of American English. `AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__WSJtest__KLdis.txt` contains scores for the same ASR system tested on the same American English corpus, but trained on the Corpus of Spontaenous Japanese.
 
-The [RL_AmEnglish](./scone-phobia/analyses/RL_AmEnglish.py) analysis can be applied to these results.
+The [RL_AmEnglish](./scone_phobia/analyses/RL_AmEnglish.py) analysis can be applied to these results.
 ???:primary-metadata?
 ```
 ``` 

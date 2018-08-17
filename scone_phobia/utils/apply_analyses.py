@@ -38,6 +38,7 @@ library being called by several libraries applied to particular tasks.
 """
 
 import pandas
+import os
 import os.path as path
 import scone_phobia.utils.mp_scores as mp_scores
 import yaml
@@ -168,32 +169,71 @@ def fetch_data(analysis, mp_folder, filt=None, encoding=None):
 
 
 def fetch_resampled_data(analysis,
-                         resampling_file,
+                         resampling_file=None,
                          resampled_mp_folder=None,
                          filt=None,
                          encoding=None):
     # Getting resampled minimal-pair scores to estimate variability.
-    # This can take time so results are saved once they are computed
+    # This can take time so if resampling_file is not None,
+    # results are saved once they are computed
     get_metadata = lambda x: parse_bootres_fname(x)
-    boot_dfs = mp_scores.resample_analysis_cached(resampling_file,
-                                                  analysis,
-                                                  resampled_mp_folder,
-                                                  get_metadata,
-                                                  encoding=encoding,
-                                                  filt=filt)
+    if resampling_file is None:
+        boot_dfs = mp_scores.resample_analysis(analysis,
+                                               resampled_mp_folder,
+                                               get_metadata,
+                                               encoding=encoding,
+                                               filt=filt)
+    else:
+        boot_dfs = mp_scores.resample_analysis_cached(resampling_file,
+                                                      analysis,
+                                                      resampled_mp_folder,
+                                                      get_metadata,
+                                                      encoding=encoding,
+                                                      filt=filt)
     boot_df = pandas.concat(boot_dfs)
     return boot_df
 
 
-# Organised with one resampling file per model-type here. Could be done
-# with finer or larger granularity depending on needs. Be careful that 
-# resampling file for whole model-type will need to be removed and recomputed
-# if we add more train or test corpora or use different distances for example.
-# Also could want to do resampling with more granularity if resampling are missing
-# for some of the models.
+def resampling_filts(resample_caching_scheme, mp_folder):
+    """
+    Function used to specify various way of caching resamples of analysis
+    results.
+    See apply_analysis below.
+    TODO? Could add a scheme where caching is done by type of model.
+    """
+    caching_filts = []
+    mp_files = [path.splitext(e)[0] for e in os.listdir(mp_folder)
+                if path.splitext(e)[1] == '.pickle']
+    if resample_caching_scheme == 'mp_file':
+        for mp_fname in mp_files:
+            filt = lambda resampled_mp_fname: mp_fname in resampled_mp_fname
+            caching_filts.append(mp_fname, filt)
+    elif resample_caching_scheme == 'sametestset_mp_filepairs':
+        # analysis should be symmetric, so we loop over unordered
+        # pairs
+        for i, mp_fname1 in enumerate(mp_files):
+            for mp_fname2 in mp_files[i+1:]:
+                metadata1 = dict(parse_res_fname(mp_fname1))
+                metadata2 = dict(parse_res_fname(mp_fname1))
+                if metadata1['test set'] == metadata2['test set']:
+                    filt_name = mp_fname1 + '___' + mp_fname2  # hacky
+                    filt = lambda resampled_mp_fname:
+                            mp_fname1 in resampled_mp_fname or \
+                            mp_fname2 in resampled_mp_fname
+                    caching_filts.append(filt_name, filt)
+    else:
+        raise ValueError(('Unsupported resample caching scheme '
+                          '{}'.format(resample_caching_scheme)))
+    return caching_filts
+
+
 def apply_analysis(analysis, mp_folder,
-                   model_types, resampling=True, analysis_folder=None,
-                   pickle_encoding=None, resampled_pickle_encoding="latin1"):
+                   filt=None,
+                   resampling=False,
+                   resample_caching_scheme=None,
+                   analysis_folder=None,
+                   pickle_encoding=None,
+                   resampled_pickle_encoding="latin1"):
     """
     analysis: function that takes a pandas dataframe containing all
         required minimal-pair scores and returns the analysis results
@@ -202,33 +242,72 @@ def apply_analysis(analysis, mp_folder,
         if resampling=True, mp_folder should also contain a 'resampling' subfolder
         where pickles containing resampled versions of the minimal-pair scores
         are stored.
-    model_types: list of identifiers, such that only minimal-pair pickles containing
-        at least one of the identifiers in their filename will be included in the 
-        analysis. Should probably be modified if we stop relying on filenames for
-        specifying primary metadata.
+    filt: string -> bool function, that takes the name of a file in mp_folder
+        and returns True iff that file should be included in the analysis. If
+        set to None, all available files are included.
     resampling: whether or not to use resampling. Currently, this only adds
         resampling-based standard deviation estimate to the analysis results,
-        but it would be easy to compute and other resampled quantities. E.g. pairwise
+        but it would be easy to compute other resampled quantities, e.g. pairwise
         permutation tests for differences in scores between two models.
-    analysis_folder: currently only used if resampling=True to store analysis
-        resamples (which can take some time to compute).
-    pickle_encoding and resampled_pickle_encoding: useful to ensure pickles will be
-    read correctly, for example if they have been computed under a different 
-    python environment.
+    resample_caching_scheme: if resampling is True, determines whether and how
+        to cache resampled analysis results. Caching results on disk is useful:
+            - if applying the analysis on resamples takes too long (if there are
+              N resamples, the duration required for the analysis will be
+              multiplied by N compared to applying the analysis without
+              resampling)
+            - if loading resampled minimal pair scores at once for all relevant
+              files in mp_folder (as determined by filt) exhausts the available
+              memory
+        Currently there is only three supported values for
+        resample_caching_scheme:
+            - None: no caching
+            - 'mp_file': will create one cache file per (non-resampled)
+               minimal-pair scores file.
+              ** This should only be used for analyses which can be applied
+                 independently for each set of minimal pair scores obtained
+                 in the same ABX task with the same features
+                 and dissimilarity function **
+            - 'sametestset_mp_filepairs': will create one cache file
+                per  (unordered) pair of (non-resampled) minimal-pair scores
+                files sharing the same test set.
+              ** This should only be used for analyses comparing patterns of
+                discriminability in the same ABX task for pairs of 
+                (features/dissimilarity function couples). Because the
+                pairs are unordered, the analysis should be symmetric in 
+                its two arguments **
+    analysis_folder: currently only used if resampling=True and
+        resample_caching_scheme is not None, to specify where to store cached
+        analysis resamples.
+    pickle_encoding and resampled_pickle_encoding: useful to ensure pickles
+        containing minimal pair scores, resp. resampled versions of those, will be
+        read correctly, for example if they have been computed under a different 
+        python environment than the current one.
     """
-    filt = lambda model: any([s in model for s in model_types])
+    if filt is None:
+        filt = lambda mp_fname: True 
     df = fetch_data(analysis, mp_folder, filt=filt, encoding=pickle_encoding)
     if resampling:
-        resampled_mp_folder = path.join(mp_folder, 'resampling')
         boot_dfs = []
-        for model_type in model_types:
-            filt = lambda model: model_type in model
-            resampling_file = path.join(analysis_folder,
-                                        '{}.pickle'.format(model_type))
+        resampled_mp_folder = path.join(mp_folder, 'resampling')
+        if resample_caching_scheme is None:
+            resampling_file = None
             boot_dfs.append(
                 fetch_resampled_data(analysis, resampling_file,
                                      resampled_mp_folder,
-                                     filt=filt, encoding=resampled_pickle_encoding))
+                                     filt=filt,
+                                     encoding=resampled_pickle_encoding))
+        else:
+            caching_filts = resampling_filts(resample_caching_scheme, mp_folder)
+            assert not(analysis_folder is None)
+            for filt_name, caching_filt in caching_filts:
+                and_filt = lambda mp_fname: filt(mp_fname) and caching_filt(mp_fname)
+                resampling_file = path.join(analysis_folder,
+                                            '{}.pickle'.format(filt_name))
+                boot_dfs.append(
+                    fetch_resampled_data(analysis, resampling_file,
+                                         resampled_mp_folder,
+                                         filt=and_filt,
+                                         encoding=resampled_pickle_encoding))
         boot_df = pandas.concat(boot_dfs)
         # Add resulting standard deviation estimates to main dataframe 
         df = mp_scores.estimate_std(df, boot_df)

@@ -23,9 +23,9 @@ import pandas
 
 
 def average_error(df):
-    assert 'test language' in df.columns
-    assert 'error' in df.columns
-    assert 'contrast' in df.columns
+    assert 'test language' in df.columns, df.columns
+    assert 'error' in df.columns, df.columns
+    assert 'contrast' in df.columns, df.columns
     avg_dfs = []
     # columns on which to average
     cols = list(df.columns)

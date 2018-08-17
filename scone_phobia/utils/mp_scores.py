@@ -298,7 +298,7 @@ def load_resampled_mp_errors(folder, get_metadata, bootid,
     # make sure to consider only files corresponding to desired batch
     if filt is None:
         filt = lambda x: True
-    augmented_filt = lambda x: filt(x)  and \
+    augmented_filt = lambda x, f=filt: f(x) and \
                                (x.split('__')[-1] == 'batch' + str(batchid))
     df, df_raws = load_mp_errors(folder, get_metadata,
                                  filt=augmented_filt, encoding=encoding,
@@ -314,18 +314,19 @@ def load_resampled_mp_errors(folder, get_metadata, bootid,
 ###########################################
 
 def resample_analysis(analysis, resampled_mp_folder, get_metadata,
-                      filt=None, encoding=None, nboot=1000, batchsize=50):
+                      filt=None, encoding=None, add_metadata=None,
+                      nboot=1000, batchsize=50):
     """
     Carry out the same analysis on various resampled versions of minimal pair
     ABX scores.
         Input: 
+            analysis : (pandas.Dataframe -> E) function where E can be any
+                       type of analysis results
            resampled_mp_folder : str, folder where minimal pair scores for
                                    different data resamples have beens stored
            get_metadata : (str -> (name, value) list) function getting the
                            properties of each result file in
                            resampled_mp_folder from their file path
-           analysis : (pandas.Dataframe -> E) function where E can be any
-                       type of analysis results
         Output:
             resampled_res : list of elements from E of size nboot
             
@@ -343,14 +344,16 @@ def resample_analysis(analysis, resampled_mp_folder, get_metadata,
                                                encoding=encoding,
                                                nboot=nboot,
                                                batchsize=batchsize,
-                                               df_raws=df_raws)                                                                         
+                                               df_raws=df_raws)
+        if not(add_metadata is None):
+            df = add_metadata(df)
         resampled_res.append(analysis(df))
     return resampled_res
 
 
 def resample_analysis_cached(resampling_file, analysis,
                              resampled_mp_folder=None, get_metadata=None,
-                             filt=None, encoding=None,
+                             filt=None, encoding=None, add_metadata=None,
                              nboot=1000, batchsize=50):
     """
     Same as resample_analysis, but caching the results in intermediate files
@@ -369,8 +372,9 @@ def resample_analysis_cached(resampling_file, analysis,
         assert not(resampled_mp_folder is None) and not(get_metadata is None)
         resampled_res = resample_analysis(analysis, resampled_mp_folder, 
                                           get_metadata, filt=filt,
-                                          encoding=encoding, nboot=nboot,
-                                          batchsize=batchsize)
+                                          encoding=encoding,
+                                          add_metadata=add_metadata,
+                                          nboot=nboot, batchsize=batchsize)
         with open(resampling_file, 'wb') as fh:
             pickle.dump(resampled_res, fh)      
     with open(resampling_file, 'rb') as fh:

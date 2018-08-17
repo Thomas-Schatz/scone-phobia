@@ -131,7 +131,7 @@ def parse_res_fname(fpath, cfg=None):
 
 
 @load_cfg_from_file
-def parse_bootres_fname(name, cfg=None):
+def parse_bootres_fname(fpath, cfg=None):
     name, _ = path.splitext(path.split(fpath)[1])
     err_message = ("Bootstrap results filename filename {} is not correctly"
                    " formatted. Check your config file and "
@@ -157,14 +157,17 @@ def parse_bootres_fname(name, cfg=None):
 ## Fetch and analyse data  #
 ############################
 
-def fetch_data(analysis, mp_folder, filt=None, encoding=None):
+def fetch_data(analysis, mp_folder, filt=None, encoding=None,
+               add_metadata=None):
     """Use the above to get just the right data"""
-    get_metadata = lambda x: parse_res_fname(x)
+    get_metadata = lambda x, parse=parse_res_fname: parse(x)
     df = mp_scores.load_mp_errors(mp_folder,
                                   get_metadata,
                                   filt=filt,
                                   encoding=encoding) # load all mp scores in a big df
-    df = analysis(df)  
+    if not(add_metadata is None):
+        df = add_metadata(df)
+    df = analysis(df)
     return df
 
 
@@ -172,24 +175,27 @@ def fetch_resampled_data(analysis,
                          resampling_file=None,
                          resampled_mp_folder=None,
                          filt=None,
-                         encoding=None):
+                         encoding=None,
+                         add_metadata=None):
     # Getting resampled minimal-pair scores to estimate variability.
     # This can take time so if resampling_file is not None,
     # results are saved once they are computed
-    get_metadata = lambda x: parse_bootres_fname(x)
+    get_metadata = lambda x, parse=parse_bootres_fname: parse(x)
     if resampling_file is None:
         boot_dfs = mp_scores.resample_analysis(analysis,
                                                resampled_mp_folder,
                                                get_metadata,
+                                               filt=filt,
                                                encoding=encoding,
-                                               filt=filt)
+                                               add_metadata=add_metadata)
     else:
         boot_dfs = mp_scores.resample_analysis_cached(resampling_file,
                                                       analysis,
                                                       resampled_mp_folder,
                                                       get_metadata,
+                                                      filt=filt,
                                                       encoding=encoding,
-                                                      filt=filt)
+                                                      add_metadata=add_metadata)
     boot_df = pandas.concat(boot_dfs)
     return boot_df
 
@@ -206,8 +212,10 @@ def resampling_filts(resample_caching_scheme, mp_folder):
                 if path.splitext(e)[1] == '.pickle']
     if resample_caching_scheme == 'mp_file':
         for mp_fname in mp_files:
-            filt = lambda resampled_mp_fname: mp_fname in resampled_mp_fname
-            caching_filts.append(mp_fname, filt)
+            # we use second arg with default value to avoid weird scope issues 
+            filt = lambda boot_mp_fname, mp_fname=mp_fname:\
+                        mp_fname in boot_mp_fname
+            caching_filts.append((mp_fname, filt))
     elif resample_caching_scheme == 'sametestset_mp_filepairs':
         # analysis should be symmetric, so we loop over unordered
         # pairs
@@ -217,23 +225,33 @@ def resampling_filts(resample_caching_scheme, mp_folder):
                 metadata2 = dict(parse_res_fname(mp_fname1))
                 if metadata1['test set'] == metadata2['test set']:
                     filt_name = mp_fname1 + '___' + mp_fname2  # hacky
-                    filt = lambda resampled_mp_fname:
-                            mp_fname1 in resampled_mp_fname or \
-                            mp_fname2 in resampled_mp_fname
-                    caching_filts.append(filt_name, filt)
+                    # we use args with default values to avoid scope issues
+                    filt = lambda bname, name1=mp_fname1, name2=mp_fname2: \
+                            name1 in bname or name2 in bname
+                    caching_filts.append((filt_name, filt))
     else:
         raise ValueError(('Unsupported resample caching scheme '
                           '{}'.format(resample_caching_scheme)))
     return caching_filts
 
 
+def is_satisfiable(filt, mp_folder):
+    """Check if there is any pickle in mp_folder satisfying filt"""
+    mp_files = [path.splitext(e)[0] for e in os.listdir(mp_folder)
+                if path.splitext(e)[1] == '.pickle']
+    satisfiable = any([filt(f) for f in mp_files])
+    return satisfiable
+
+
 def apply_analysis(analysis, mp_folder,
                    filt=None,
+                   add_metadata=None,
                    resampling=False,
                    resample_caching_scheme=None,
                    analysis_folder=None,
                    pickle_encoding=None,
-                   resampled_pickle_encoding="latin1"):
+                   resampled_pickle_encoding="latin1",
+                   verbose=False):
     """
     analysis: function that takes a pandas dataframe containing all
         required minimal-pair scores and returns the analysis results
@@ -245,6 +263,10 @@ def apply_analysis(analysis, mp_folder,
     filt: string -> bool function, that takes the name of a file in mp_folder
         and returns True iff that file should be included in the analysis. If
         set to None, all available files are included.
+    add_metadata: pandas.Dataframe -> pandas.Dataframe function, that takes a
+        raw mp_scores Dataframe (containing only 'contrast', 'error' and primary
+        metadata columns, where primary metadata is as specified in the
+        config.yml file) and adds some additional metadata columns to it
     resampling: whether or not to use resampling. Currently, this only adds
         resampling-based standard deviation estimate to the analysis results,
         but it would be easy to compute other resampled quantities, e.g. pairwise
@@ -285,7 +307,8 @@ def apply_analysis(analysis, mp_folder,
     """
     if filt is None:
         filt = lambda mp_fname: True 
-    df = fetch_data(analysis, mp_folder, filt=filt, encoding=pickle_encoding)
+    df = fetch_data(analysis, mp_folder, filt=filt, encoding=pickle_encoding,
+                    add_metadata=add_metadata)
     if resampling:
         boot_dfs = []
         resampled_mp_folder = path.join(mp_folder, 'resampling')
@@ -295,19 +318,27 @@ def apply_analysis(analysis, mp_folder,
                 fetch_resampled_data(analysis, resampling_file,
                                      resampled_mp_folder,
                                      filt=filt,
-                                     encoding=resampled_pickle_encoding))
+                                     encoding=resampled_pickle_encoding,
+                                     add_metadata=add_metadata))
         else:
             caching_filts = resampling_filts(resample_caching_scheme, mp_folder)
             assert not(analysis_folder is None)
             for filt_name, caching_filt in caching_filts:
-                and_filt = lambda mp_fname: filt(mp_fname) and caching_filt(mp_fname)
-                resampling_file = path.join(analysis_folder,
-                                            '{}.pickle'.format(filt_name))
-                boot_dfs.append(
-                    fetch_resampled_data(analysis, resampling_file,
-                                         resampled_mp_folder,
-                                         filt=and_filt,
-                                         encoding=resampled_pickle_encoding))
+                and_filt = lambda mp_fname, f1=filt, f2=caching_filt:\
+                                f1(mp_fname) and f2(mp_fname)
+                if is_satisfiable(and_filt, mp_folder): 
+                    resampling_file = path.join(analysis_folder,
+                                                '{}.pickle'.format(filt_name))
+                    boot_dfs.append(
+                        fetch_resampled_data(analysis, resampling_file,
+                                             resampled_mp_folder,
+                                             filt=and_filt,
+                                             encoding=resampled_pickle_encoding,
+                                             add_metadata=add_metadata))
+                elif verbose:
+                    print(('Could not satisfy caching filter {}'
+                           "Probably because it was excluded by your 'filt' argument"
+                           ).format(filt_name))
         boot_df = pandas.concat(boot_dfs)
         # Add resulting standard deviation estimates to main dataframe 
         df = mp_scores.estimate_std(df, boot_df)

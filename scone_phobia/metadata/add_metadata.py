@@ -32,3 +32,4 @@ def language_register(df):
                                 for e in df['training set']]
     df['test register'] = ['None' if e == 'None' else corpora.register(e)
                             for e in df['test set']]
+    return df

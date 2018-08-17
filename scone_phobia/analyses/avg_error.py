@@ -5,74 +5,51 @@ Created on Wed Jun 27 12:01:02 2018
 @author: Thomas Schatz
 
 Average errors on C, V or all contrasts (excluding silence/noise marker)
+
+This assumes:
+  1. That the pandas.DataFrame specified as argument contains at least
+     a'contrast', an 'error' and a 'test language' column.
+  2. That scone_phobia.metadata.corpora specifies vowels and consonants for all
+     corpora appearing in the 'test language' column.
+  3. That errors should be obtained by grouping all lines
+     sharing the same values in all columns but 'contrast' and 'error'
+     together.
 """
 
 
-from scone_phobia import apply_analysis
 import scone_phobia.metadata.corpora as corpora
 import numpy as np
 import pandas
-# import corpora
 
 
 def average_error(df):
-    #TODO get all language and do for loop with call to appropriate char sets
-    # loop over grand average, C average and V average
-    test_langs = np.unique(df['test language'])
-
+    assert 'test language' in df.columns
+    assert 'error' in df.columns
+    assert 'contrast' in df.columns
+    avg_dfs = []
+    # columns on which to average
+    cols = list(df.columns)
+    del cols[cols.index('contrast')]
+    del cols[cols.index('error')]
+    # iterate over test languages
+    test_langs = np.unique(df['test language'])  
     for lang in test_langs:
+        # get relevant sub-dataframe
         ind_lang = df['test language'] == lang
-        # ad hoc cols?
-        cols = ['model type', 'train set', 'test set', 'dissimilarity']
-        cols = cols + ['train language', 'test language',
-                       'train register', 'test register']
         df_lang = df[ind_lang]
+        # get segment types for lang
         lang_C = corpora.consonants(lang)
         lang_V = corpora.vowels(lang)
         all_seg = lang_C +lang_V
-        dfs = []
-        for segs, con_type in [(lang_C, 'C'), (lang_V, 'V'), (all_seg, 'all')]:
+        # for each segment type, get average errors
+        for segs, seg_type in [(lang_C, 'C'), (lang_V, 'V'), (all_seg, 'all')]:
+            # get indices of contrasts involving two segments of desired type
             ind_segs = [np.all([seg in segs for seg in con.split("-")])
                                                 for con in df_lang['contrast']]
-            
-            df_langseg = df_lang[ind_segs].groupby(cols, as_index=False).mean()
-            df_langseg['contrast type'] = con_type
-            dfs.append(df_langseg)
-    df_res = pandas.concat(dfs)    
-    df_res = df_res.reset_index(drop=True)
-    return df_res
-
-
-##########
-## Main ##
-##########
-
-# from python
-import scone_phobia.analyses.avg_error as avg_error
-import scone_phobia.plots.avg_error as plt_avg_error
-mp_folder = ...
-avg_error.run(mp_folder, ...)
-plt_avg_error.plot(...)
-
-
-
-mp_folder = '/Users/admin/Documents/PhD/Code/test/mpscores'
-
-model_types = ['dpgmm_vtln_vad', 'AMtri1_sat_small_LMtri1satsmall',
-               'mfcc_novtln', 'mfcc_vtln', 'BNF', 'AMtri2_sat_LMmono',
-               'AMnnet1_tri2_smbr_LMmono']  # list of models to be analysed
-
-# set to True to get errobars, you need to have run resample_mp_score.py before
-resampling = True  
-analysis = lambda df: average_error(df)
-
-model_types = ['dpgmm_vtln_vad', 'AMtri1_sat_small_LMtri1satsmall',
-               'mfcc_novtln', 'mfcc_vtln', 'BNF', 'AMtri2_sat_LMmono',
-               'AMnnet1_tri2_smbr_LMmono']  # list of models to be analysed
-
-res = apply_analysis(analysis, mp_folder, model_types,
-                     resampling=resampling, analysis_folder='')
-df.save(res)
-
-
-
+            # average over those contrasts based on groups defined by cols
+            avg = df_lang[ind_segs].groupby(cols, as_index=False).mean()
+            avg['contrast type'] = seg_type
+            avg_dfs.append(avg)
+    res_df = pandas.concat(avg_dfs)    
+    res_df = res_df.reset_index(drop=True)
+    return res_df

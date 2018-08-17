@@ -1,76 +1,186 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Jun 27 14:13:48 2018
+Created on Wed Jun 27 14:12:25 2018
 
 @author: Thomas Schatz
 """
 
-##
-# error patterns cosine similarity
-##
+# use latex for text rendering in figure + unicode fonts
+import matplotlib as mpl
+mpl.use("pgf")
+pgf_with_custom_preamble = {
+    "font.family": "serif", # use serif/main font for text elements
+    "text.usetex": True,    # use inline math for ticks
+    "pgf.rcfonts": False,   # don't setup fonts from rc parameters
+    "pgf.preamble": [
+         "\\usepackage{unicode-math}",  # unicode math setup
+         "\\setmainfont{Doulos SIL}" # serif font via preamble
+         ]
+}
+mpl.rcParams.update(pgf_with_custom_preamble)
 
-def get_corrs(df, models, tasks):
-    groups = df.groupby(['task', 'model'])
-    corrs= {}
-    for task in tasks:
-        corrs[task] = np.empty(shape=(len(models), len(models)))
-        corrs[task][:,:] = np.nan
-    for (task1, model1), df1 in groups:
-       for (task2, model2), df2 in groups:
-           if task1 == task2 and model1 != model2:
-               i = models.index(model1)
-               j = models.index(model2)
-               df12 = pandas.merge(df1, df2, on=['p1', 'p2'], suffixes=['_1', '_2'])
-               # convert to errors and normalize mean to 1
-               err1 = 1.-df12['score_1']
-               err2 = 1.-df12['score_2']
-               err1 = err1/np.float(err1.mean())
-               err2 = err2/np.float(err2.mean())
-               corrs[task1][i, j] = np.dot(err1, err2)/(np.linalg.norm(err1)*np.linalg.norm(err2))  # np.corrcoef([err1, err2])[0,1]
-    return corrs
+""" Quick test
+import matplotlib.pyplot as plt
+plt.figure(figsize=(4.5,2.5))
+plt.plot(range(5))
+#plt.xlabel(u"unicode text: я, ψ, €, ü, \\unitfrac[10]{°}{µm}")
+#plt.ylabel(u"\\XeLaTeX")
+plt.legend([u"unicode math: ɑ ɨi˧˩˧  ə̆ʊ˧˩˧"])
+plt.tight_layout(.5)
+plt.savefig('tt.pdf')
+"""
 
-if model == 'HMM':
-    root = '/Users/admin/Documents/PhD/Code/ABX_crossling/Results/processed_data'
-else:
-    root = '/Users/admin/Documents/PhD/Code/ABX_crossling/Results/processed_data_GMM'
-df_c = pandas.read_csv(p.join(root, 'C.csv'), sep='\t')
-del df_c['Unnamed: 0']
-df_v = pandas.read_csv(p.join(root, 'V.csv'), sep='\t')
-del df_v['Unnamed: 0']
 
-corpora = ['WSJ', 'BUC', 'CSJ', 'GPM', 'GPV']
-task_names = ['American English (WSJ)', 'American English (BUC)',
-              'Japanese (CSJ)', 'Mandarin (GPM)', 'Vietnamese (GPV)']
-models = ['WSJ', 'BUC', 'CSJ', 'GPM', 'GPV', 'input_feats']
-model_names = ['WSJ', 'BUC', 'CSJ', 'GPM', 'GPV', 'Input\nfeatures']
+import matplotlib.patheffects as path_effects
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.manifold import MDS
 
-corr_c = get_corrs(df_c, models, corpora)
-corr_v = get_corrs(df_v, models, corpora)
 
-avg_c = np.zeros(shape=(len(models), len(models)))
-avg_v = np.zeros(shape=(len(models), len(models)))
-for task in corr_c:
-    avg_c = avg_c + corr_c[task]
-    avg_v = avg_v + corr_v[task]
-avg_c = avg_c/np.float(len(corr_c))
-avg_v = avg_v/np.float(len(corr_v))
-# do not plot upper part as it is redundant
-n = avg_c.shape[0]
-for i in range(n):
-    for j in range(i+1, n):
-        avg_c[i, j] = np.nan
-n = avg_v.shape[0]
-for i in range(n):
-    for j in range(i+1, n):
-        avg_v[i, j] = np.nan    
+def fitMDS(dissimilarities, r):
+    mds = MDS(metric=False, n_init=10000, random_state=r,
+              dissimilarity='precomputed')
+    mds.fit(dissimilarities)
+    return mds.embedding_, mds.stress_  # embedding: n_models x 2 array
 
-if model == 'HMM':
-    target = '/Users/admin/Documents/PhD/Code/ABX_crossling/Results/figures'
-else:
-    target = '/Users/admin/Documents/PhD/Code/ABX_crossling/Results/figures_GMM'
-fc = p.join(target, 'corrC.pdf')
-fv = p.join(target, 'corrV.pdf')
-plot_cm(avg_c, model_names, fontsize=15, padding_x=20, padding_y=30, title='Consonants', scale=(0.85,1),
-        filename=fc, title_fontsize=30, va='center', ha='center')
-plot_cm(avg_v, model_names, fontsize=15, padding_x=20, padding_y=30, title='Vowels', scale=(0.85,1),
-        filename=fv, title_fontsize=30, va='center', ha='center')
+
+def plotEmbedding(embedding, labels, colors, title, filename=None):
+    fig = plt.figure(frameon=False)
+    ax = fig.add_subplot(1, 1, 1)
+    ax.set_aspect('equal', adjustable='box')
+    # major ticks every .2, minor ticks every .05                                      
+    major_ticks = np.arange(-1., 1.01, .2)                                              
+    minor_ticks = np.arange(-1., 1.01, .05)                                               
+    ax.set_xticks(major_ticks)                                                       
+    ax.set_xticks(minor_ticks, minor=True)                                           
+    ax.set_yticks(major_ticks)                                                       
+    ax.set_yticks(minor_ticks, minor=True)                                           
+    ax.grid(which='minor', alpha=0.2)                                                
+    ax.grid(which='major', alpha=0.5) 
+    for i, (lab, c) in enumerate(zip(labels, colors)):
+        x, y = embedding[i,:]
+        #plt.plot(x, y, 'x'+c, markersize=10)
+        #plt.annotate(lab, xy=(x,y), xytext=(0, 10),
+        #             textcoords='offset points', color=c,
+        #             size=13, ha='center')
+        ax.text(x, y, lab, ha="center", va="center", size=26, color=c)
+    mx, Mx = min(embedding[:,0]), max(embedding[:,0])
+    my, My = min(embedding[:,1]), max(embedding[:,1])
+    mx, Mx = mx-.1, Mx+.1
+    my, My = my-.05, My+.05
+    ax.axis([mx, Mx, my, My])
+    #plt.axis('off')
+    ax.set_title(title, size=32)
+    ax.title.set_position([.5, 1.02])
+    ax.xaxis.set_ticklabels([])
+    ax.yaxis.set_ticklabels([])
+    if not(filename is None):
+       plt.tight_layout()
+       plt.savefig(filename)
+       
+
+def getFigDim(embedding):
+    mx, Mx = min(embedding[:,0]), max(embedding[:,0])
+    my, My = min(embedding[:,1]), max(embedding[:,1])
+    mx, Mx = mx-.1, Mx+.1
+    my, My = my-.05, My+.05
+    return -1, 1, -.75, .75  #mx, Mx, my, My
+
+def plot2Embeddings(embeddings, labels, colors, outline,
+                    titles, filename=None):
+    # we want two subplots with same aspect ratio, same scale,
+    # but different absolute sizes
+    mx1, Mx1, _, _ = getFigDim(embeddings[0])
+    mx2, Mx2, _, _ = getFigDim(embeddings[1])
+    r =  np.float(Mx2-mx2)/np.float(Mx1-mx1)
+    fig, axes = plt.subplots(1, 2,
+                             gridspec_kw = {'width_ratios':[1, r]},
+                             frameon=False)
+    for ax, embedding, title in zip(axes, embeddings, titles):
+        ax.set_aspect('equal', adjustable='box')
+        # major ticks every .2, minor ticks every .05                                      
+        major_ticks = np.arange(-1., 1.01, .5)                                              
+        minor_ticks = np.arange(-1., 1.01, .1)                                               
+        ax.set_xticks(major_ticks)                                                       
+        ax.set_xticks(minor_ticks, minor=True)                                           
+        ax.set_yticks(major_ticks)                                                       
+        ax.set_yticks(minor_ticks, minor=True)                                           
+        ax.grid(which='minor', alpha=0.2)                                                
+        ax.grid(which='major', alpha=0.5) 
+        for i, (lab, c, ol) in enumerate(zip(labels,
+                                             colors, 
+                                             outline)):
+            x, y = embedding[i,:]
+            #plt.plot(x, y, 'x'+c, markersize=10)
+            #plt.annotate(lab, xy=(x,y), xytext=(0, 10),
+            #             textcoords='offset points', color=c,
+            #             size=13, ha='center')
+            text = ax.text(x, y, lab, ha="center", va="center",
+                           size=20, color=c)
+            if ol:
+              text.set_path_effects([path_effects.Stroke(linewidth=3,
+                                                         foreground='black'),
+                                     path_effects.Normal()])
+        figdim = getFigDim(embedding)
+        ax.axis(figdim)
+        #plt.axis('off')
+        ax.set_title(title, size=22)
+        ax.title.set_position([.5, 1.02])
+        ax.xaxis.set_ticklabels([])
+        ax.yaxis.set_ticklabels([])
+        if not(filename is None):
+           plt.tight_layout()
+           plt.savefig(filename)
+
+# correlation between average error patterns over 5 corpora (4 languages)
+models = ['WSJ', 'BUC', 'CSJ', 'GPM', 'GPV', 'Input feat.']
+#colors = ['r', 'r', 'c', 'b', 'k', 'g']
+colors = ['r', 'r', 'b', 'b', 'b', 'k']  # 0.5 = gray
+outline = [False, False, False, False, False, False]
+
+corrC = [[1., .96, .937, .915, .896, .942],
+         [.96, 1., .939, .914, .903, .941],
+         [.937, .939, 1., .926, .906, .942],
+         [.915, .914, .926, 1., .924, .917],
+         [.896, .903, .906, .924, 1., .916],
+         [.942, .941, .942, .917, .916, 1.]]
+corrV = [[1., .936, .896, .883, .875, .914],
+         [.936, 1., .903, .894, .882, .924],
+         [.896, .903, 1., .867, .852, .899],
+         [.883, .894, .867, 1., .883, .892],
+         [.875, .882, .852, .883, 1., .887],
+         [.914, .924, .899, .892, .887, 1.]]
+
+
+
+dissC = 1. - np.array(corrC)
+dissV = 1. - np.array(corrV)
+
+
+"""
+for r in range(10):  # random initial state
+    embC, stressC = fitMDS(dissC, r)
+    embV, stressV = fitMDS(dissV, r)    
+    plotEmbedding(embC, models, colors,  'Consonants',
+                  'corrCmds{0}_stress{1:.5f}.pdf'.format(r, stressC))
+    plotEmbedding(embV, models, colors, 'Vowels',
+                  'corrVmds{0}_stress{1:.5f}.pdf'.format(r, stressV))
+""" 
+"""             
+# after testing with 10000 init, random seed 0 for consonants and 5 for vowels
+# gave the embeddings with the lowest stress
+rC = 0
+rV = 5
+embC, stressC = fitMDS(dissC, rC)
+embV, stressV = fitMDS(dissV, rV)
+np.save('corrCembedding', embC)
+np.save('corrVembedding', embV)
+"""
+embC = np.load('corrCembedding.npy')
+embV = np.load('corrVembedding.npy')
+#plotEmbedding(embC, models, colors,  'Consonants',
+#              'corrCmds.pdf')
+#plotEmbedding(embV, models, colors, 'Vowels',
+#              'corrVmds.pdf')
+plot2Embeddings([embC, embV], models, colors, outline, ['Consonants', 'Vowels'],
+               'corrCVmds_color.pdf')

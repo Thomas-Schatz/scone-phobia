@@ -104,7 +104,7 @@ def suffix_split(token, cfg, err_message):
     for key in cfg:
         if len(token) >= len(key):
             if token[-len(key):] == key:
-                matches.append((key, token))
+                matches.append((key, token[:-len(key)]))
     assert len(matches) == 1, err_message
     return matches[0]
 

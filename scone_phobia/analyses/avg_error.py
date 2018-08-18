@@ -9,11 +9,11 @@ Average errors on C, V or all contrasts (excluding silence/noise marker)
 This assumes:
   1. That the pandas.DataFrame specified as argument contains at least
      a'contrast', an 'error' and a 'test language' column.
-  2. That scone_phobia.metadata.corpora specifies vowels and consonants for all
-     corpora appearing in the 'test language' column.
-  3. That errors should be obtained by grouping all lines
-     sharing the same values in all columns but 'contrast' and 'error'
-     together.
+  2. That scone_phobia.metadata.corpora correctly specifies vowels and
+     consonants for all languages appearing in the 'test language' column.
+  3. That errors should be obtained by grouping together all lines of the
+     Dataframe sharing the same values in all columns but 'contrast' and
+     'error'.
 """
 
 
@@ -22,7 +22,7 @@ import numpy as np
 import pandas
 
 
-def average_error(df):
+def avg_error(df):
     assert 'test language' in df.columns, df.columns
     assert 'error' in df.columns, df.columns
     assert 'contrast' in df.columns, df.columns

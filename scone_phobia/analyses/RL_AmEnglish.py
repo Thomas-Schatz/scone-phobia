@@ -3,17 +3,38 @@
 Created on Wed Jun 27 11:07:59 2018
 
 @author: Thomas Schatz
+
+Testing predictions for minimal pair discrimination 
+on American English r/l with w/y and overall consonant contrast average
+as controls.
+
+The main function is RL_AmEnglish.
+
+This assumes:
+  1. That the pandas.DataFrame specified as argument contains at least
+     a'contrast', an 'error' and a 'test language' column.
+  2. That items in the 'contrast' column follow a naming scheme
+     compatible with scone_phobia.utils.mp_scores.mp_contrast_name
+  3. That American English r, l, w, y in the contrast names appear as
+     'R', 'L', 'W', 'Y' respectively.
+  4. That the 'test language' column for American English test corpora
+     (and only for those) contains 'American English'.
+  5. That errors should be obtained by grouping together all lines of the
+     Dataframe sharing the same values in all columns but 'contrast' and
+     'error'.
+  6. That scone_phobia.metadata.corpora correctly specifies consonants for
+     the 'American English' language.
 """
 
 
-from scone_phobia import apply_analysis
+
+import scone_phobia.metadata.corpora as corpora
 import scone_phobia.utils.mp_scores as mp_scores
 import numpy as np
 import pandas
-import corpora
 
 
-def AE_rl(df):
+def RL_AmEnglish(df):
     """
     Select only r/l and w/y, plus add average on consonant contrasts rows
     TODO? do the two parts using separate functions shared with other analyses
@@ -26,9 +47,10 @@ def AE_rl(df):
    
     df_res = df[ind_AE & ind_con].copy()  # make a copy to avoid side-effects
     # C avg
-    cols = ['model type', 'train set', 'test set', 'dissimilarity']
-    cols = cols + ['train language', 'test language',
-                   'train register', 'test register']
+    # columns on which to average
+    cols = list(df.columns)
+    del cols[cols.index('contrast')]
+    del cols[cols.index('error')]
     df_AE = df[ind_AE]
     AE_C = corpora.consonants('American English')
     ind_C = [np.all([seg in AE_C for seg in con.split("-")])
@@ -39,23 +61,3 @@ def AE_rl(df):
     df_res = pandas.concat([df_res, df_C])    
     df_res = df_res.reset_index(drop=True)
     return df_res
-
-
-##########
-## Main ##
-##########
-
-
-model_types = ['dpgmm_vtln_vad', 'AMtri1_sat_small_LMtri1satsmall',
-               'mfcc_novtln', 'mfcc_vtln', 'BNF', 'AMtri2_sat_LMmono',
-               'AMnnet1_tri2_smbr_LMmono']  # list of models to be analysed
-
-root = '/Users/admin/Documents/PhD/Code/perceptual-tuning-results/ABX/'  #HMMvsDNN/tri2vsnnet1/'
-resampling = True  # set to True to get errobars
-                    # you need to have run resample_mp_score.py before
-
-
-analysis = lambda df: AE_rl(df)
-analysis_name = "RL_AmEnglish"
-get_results = lambda: apply_analysis(analysis, analysis_name, root,
-                                     model_types, resampling)

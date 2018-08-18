@@ -7,10 +7,30 @@ Created on Wed Jun 20 10:02:52 2018
 
 Testing predictions for minimal pair discrimination 
 on vowel length in Japanese with vowel quality as a control.
+
+The main function is len_vs_quality_JapV.
+
+This assumes:
+  1. That the pandas.DataFrame specified as argument contains at least
+     a'contrast', an 'error' and a 'test language' column.
+  2. That items in the 'contrast' column follow a naming scheme
+     compatible with scone_phobia.utils.mp_scores.mp_contrast_name
+  3. That Japanese vowels in the contrast names appear as
+     'a', 'e', 'i', 'o', 'u' for short vowels and
+     'a+H', 'e+H', 'i+H', 'o+H', 'u+H' for long vowels
+  4. That the 'test language' column for Japanese test corpora
+     (and only for those) contains 'Japanese'.
+  5. That errors should be obtained by grouping together all lines of the
+     Dataframe sharing the same values in all columns but 'contrast' and
+     'error'.
 """
 
-import phonediscri_byspkcontext_mpscores as mp_scores
-import ABXresults_management as res_manager
+
+# this is just to use the mp_contrast_name function
+# taking two segment names and returning the name of 
+# the contrast as specified in the 'contrast' column
+# of the mp_error dataframe.
+import scone_phobia.utils.mp_scores as mp_scores
 
 
 ############################
@@ -30,6 +50,7 @@ def select_mp_errors(df):
                     quality contrasts, as indicated by a new
                     'contrast type' column
     """
+    # would be cleaner to get that from scone_phobia.metadata.corpora maybe
     Vquals = ['a', 'e', 'i', 'o', 'u']
     duration = [mp_scores.mp_contrast_name(V, V+'+H') for V in Vquals]
     quality = [mp_scores.mp_contrast_name(V1, V2)
@@ -51,29 +72,13 @@ def avg_over_groups(df_len):
     """
     Aggregate minimal pair errors over all length, resp. all quality contrasts
     """
-    cols = ['model type', 'train set', 'test set', 'dissimilarity']
-    cols = cols + ['train language', 'test language',
-                   'train register', 'test register']
-    cols = cols + ['contrast type']
+    # columns on which to average
+    cols = list(df_len.columns)
+    del cols[cols.index('contrast')]
+    del cols[cols.index('error')]
     df_avg = df_len.groupby(cols, as_index=False).mean()
     return df_avg
 
 
-##########
-## Main ##
-##########
-
-
-model_types = ['dpgmm_vtln_vad', 'AMtri1_sat_small_LMtri1satsmall',
-               'mfcc_novtln', 'mfcc_vtln', 'BNF', 'AMtri2_sat_LMmono',
-               'AMnnet1_tri2_smbr_LMmono']  # list of models to be analysed
-
-root = '/Users/admin/Documents/PhD/Code/perceptual-tuning-results/ABX/'  #HMMvsDNN/tri2vsnnet1/'
-resampling = True  # set to True to get errobars
-                    # you need to have run resample_mp_score.py before
-
-
-analysis = lambda df: avg_over_groups(select_mp_errors(df))
-analysis_name = "len_vs_quality_JapV"
-get_results = lambda: res_manager.get_results(analysis, analysis_name, root,
-                                              model_types, resampling)
+def len_vs_quality_JapV(df):
+    return avg_over_groups(select_mp_errors(df))

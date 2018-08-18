@@ -6,12 +6,18 @@ Created on Wed Jun 27 12:18:50 2018
 
 Useful info about corpora of speech recordings.
 
-Currently there are four functions, which take the
-corpus name as input and respectively return the:
-  - language
-  - register
-  - list of consonants
-  - list of vowels.
+Currently there are four functions:
+    - two which take the corpus name as input and respectively return the:
+        - language
+        - register
+    - two which take a language as input and return the:
+        - list of consonants (in ASCII code or ipa, depending on
+            'ipa' optional arg)
+        - list of vowels  (in ASCII code or ipa, depending on
+            'ipa' optional arg).
+
+This assumes that the ASCII code for all corpora sharing a same langague
+is consistent. 
 
 To add new corpora just extend these functions appropriately.
 

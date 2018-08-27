@@ -81,4 +81,7 @@ def avg_over_groups(df_len):
 
 
 def len_vs_quality_JapV(df):
+    assert 'test language' in df.columns, df.columns
+    assert 'error' in df.columns, df.columns
+    assert 'contrast' in df.columns, df.columns
     return avg_over_groups(select_mp_errors(df))

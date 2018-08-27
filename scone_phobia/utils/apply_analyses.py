@@ -217,12 +217,12 @@ def resampling_filts(resample_caching_scheme, mp_folder):
                         mp_fname in boot_mp_fname
             caching_filts.append((mp_fname, filt))
     elif resample_caching_scheme == 'sametestset_mp_filepairs':
-        # analysis should be symmetric, so we loop over unordered
+        # analysis not assumed symmetric, so we loop over all
         # pairs
-        for i, mp_fname1 in enumerate(mp_files):
-            for mp_fname2 in mp_files[i+1:]:
-                metadata1 = dict(parse_res_fname(mp_fname1))
-                metadata2 = dict(parse_res_fname(mp_fname1))
+        for mp_fname1 in mp_files:
+            metadata1 = dict(parse_res_fname(mp_fname1))
+            for mp_fname2 in mp_files:
+                metadata2 = dict(parse_res_fname(mp_fname2))
                 if metadata1['test set'] == metadata2['test set']:
                     filt_name = mp_fname1 + '___' + mp_fname2  # hacky
                     # we use args with default values to avoid scope issues
@@ -290,13 +290,11 @@ def apply_analysis(analysis, mp_folder,
                  in the same ABX task with the same features
                  and dissimilarity function **
             - 'sametestset_mp_filepairs': will create one cache file
-                per  (unordered) pair of (non-resampled) minimal-pair scores
+                per (ordered) pair of (non-resampled) minimal-pair scores
                 files sharing the same test set.
               ** This should only be used for analyses comparing patterns of
                 discriminability in the same ABX task for pairs of 
-                (features/dissimilarity function couples). Because the
-                pairs are unordered, the analysis should be symmetric in 
-                its two arguments **
+                (features/dissimilarity function couples). **
     analysis_folder: currently only used if resampling=True and
         resample_caching_scheme is not None, to specify where to store cached
         analysis resamples.

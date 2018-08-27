@@ -39,6 +39,9 @@ def RL_AmEnglish(df):
     Select only r/l and w/y, plus add average on consonant contrasts rows
     TODO? do the two parts using separate functions shared with other analyses
     """
+    assert 'test language' in df.columns, df.columns
+    assert 'error' in df.columns, df.columns
+    assert 'contrast' in df.columns, df.columns
     # rl, wy
     target_contrasts = [mp_scores.mp_contrast_name('R', 'L'), 
                         mp_scores.mp_contrast_name('W', 'Y')]

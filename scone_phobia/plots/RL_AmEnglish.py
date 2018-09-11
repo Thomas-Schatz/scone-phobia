@@ -63,11 +63,7 @@ data = RL_AmEnglish.get_results()
 
 #TODO clean plotting code
 
-def query_df(df, d):
-    inds = [True]*len(df)
-    for e in d:
-        inds = (df[e] == d[e]) & inds
-    return df[inds]
+
 
 def plot_rl(task, models, contrasts, abx_errors, abx_errors_std,
             model_colors, contrasts_colors,

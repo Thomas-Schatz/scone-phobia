@@ -70,30 +70,35 @@ python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonom
 Note that it is important for the validity of the results to use the same resampling scheme (number of resamples and random seeds) for each of the result files to be analyzed.
 
 ### Perform some analyses and plot the results
-Once minimal-pair scores have been computed (and optionally resampled), you can run existing [analysis](scone_phobia/analyses) and [plot](scone_phobia/plots) scripts (depending on the nature of your data, not all scripts might be applicable, look at the comments within each script for applicability conditions). You can also take inspiration from the existing examples to write (and contribute!) your own analysis and plot scripts.
+Once minimal-pair scores have been computed (and optionally resampled), you can run existing [analysis](scone_phobia/analyses) scripts and generate plots (depending on the nature of your data, not all scripts might be applicable, look at the comments within each script to check applicability conditions). You can also take inspiration from the existing examples to write (and contribute!) your own analysis scripts.
 
 As an example, let us look at discrimination of American English /r/ and /l/ by American English-trained vs Japanese-trained models. If our models are [anything like humans](https://en.wikipedia.org/wiki/Perception_of_English_/r/_and_/l/_by_Japanese_speakers#Perception), Japanese-trained models should have a much harder time making this distinction than American English trained ones.
 
-`AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__WSJtest__KLdis.txt` contains discrimination scores for an Automatic Speech Recognition (ASR) system trained on the Buckeye corpus of American English and tested on the Wall Street Journal corpus of American English. `AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__WSJtest__KLdis.txt` contains scores for the same ASR system tested on the same American English corpus, but trained on the Corpus of Spontaenous Japanese.
+`AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__WSJtest__KLdis.txt` contains discrimination scores for an Automatic Speech Recognition (ASR) system trained on the Buckeye corpus of American English and tested on the Wall Street Journal corpus of American English. `AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__WSJtest__KLdis.txt` contains scores for the same ASR system tested on the same American English corpus, but trained on the Corpus of Spontaneous Japanese.
 
-The [RL_AmEnglish](./scone_phobia/analyses/RL_AmEnglish.py) analysis can be applied to these results.
-???:primary-metadata?
+The [RL_AmEnglish](./scone_phobia/analyses/RL_AmEnglish.py) analysis can be applied to these results, as illustrated in the [example ipython notebook](./examples/RL_AmEnglish_example.ipynb). For each model, the discriminability of American English /r/ and /l/ is computed as well as two controls: the discriminability of American English /w/ and /y/, which Japanese listeners are not expected to have trouble with, and the average discriminability of all American English consonant contrasts.
+
+To run the example notebook, go the [examples](./examples) directory and launch a jupyter notebook:
 ```
-``` 
+cd ../examples
+jupyter notebook
+```
+The jupyter notebook home will open in your internet browser. From there open the `RL_AmEnglish_example` notebook, select the first cell and run it (with shift+return). This will run the [RL_AmEnglish](./scone_phobia/analyses/RL_AmEnglish.py) analysis on the minimal-pair scores obtained from our two example ABXpy results files and display the resulting pandas.Dataframe. Then select the second cell and run it. This will plot our results using the seaborn library.
+
 
 ## Repo organisation
 
-There is, on the one hand, a somewhat static set of general-purpose utilities that makes it easy to write new analysis and plot scripts and, on the other hand, an open-ended set of such analysis and plot scripts.
+There is, on the one hand, a somewhat static set of general-purpose utilities that makes it easy to write new analysis scripts and, on the other hand, an open-ended set of analysis scripts.
 
 There are currently four packages (i.e. subfolders) in the repository:
   - `utils`: this is the core part of the library, where general-purpose utilities are placed
-  - `metadata`: this is a place where metadata that is not directly stored in the ABXpy result filenames can be stored and made available to analysis and plot scripts. Currently it contains only the `corpora.py` module which specifies the language, register, consonants and vowels for each corpus of speech recordings we have been using.
-  - `analyses`: scripts for carrying out a particular analysis (e.g. comparing discrimination errors obtained with a Japanese vs an American English model on American English /r/-/l/ discrimination) should go there
-  - `plots`: scripts used to generate plots from the results of a particular analysis should go there
+  - `metadata`: this is a place where metadata that is not directly stored in the ABXpy result filenames can be stored and made available to analysis scripts. Currently it contains only the `corpora.py` module which specifies the language, register, consonants and vowels for each corpus of speech recordings we have been using.
+  - `analyses`: scripts for carrying out a particular analysis (e.g. comparing discrimination errors obtained with a Japanese vs an American English model on American English /r/-/l/ discrimination) should go there.
+  - `plots`: any general-purpose plot utilities should go there.
 
 ## Development
 
-User contributions are welcome, especially to propose new analysis and plot scripts.
+User contributions are welcome, especially to propose new analysis scripts.
 
 
 ## Issues

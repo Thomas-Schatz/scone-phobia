@@ -9,6 +9,7 @@ Utility functions around seaborn.catplot for easier customization of plots.
 
 import numpy as np
 import seaborn as sns
+import matplotlib.patches as patches
 
 
 def catplot_abscissa(x_order, hue_order=None, xtype='center'):
@@ -109,3 +110,43 @@ def custom_catplot(x, y, yerr, data, col=None, row=None, hue=None,
             g.axes[j, i].errorbar(xs, ys, yerrs,
                                   linestyle='None', marker='None', **err_args)
     return g, x_dict
+
+
+def within_tol(a, b, eps):
+    res = True
+    for e, f in zip(a, b):
+        if not(abs(e-f) < eps):
+            res = False
+            break
+    return res
+
+
+def set_edgecolor(ax, x_order, hue_order, f, line_width=None):
+    """
+    Function to customize the colors of the edges in a seaborn catplot.
+    Probably won't give a nice result if the edgecolor is not shared by
+    bars from a same group (hue).
+    
+    Will need to be adapted if we want to use it on a graph without hues.
+    On graph with several facets, needs to be applied iteratively to each
+    facet.
+    """
+    # get dict indicating abscissa of each bar
+    xl = catplot_abscissa(x_order, hue_order, 'left')
+    rectangles = [e for e in ax.get_children()
+                    if isinstance(e, patches.Rectangle)]             
+    # filter out spurious rectangles whose origin I don't understand
+    rectangles = [e for e in rectangles if not(e.get_width() == 1 and \
+                                               e.get_height() == 1 and \
+                                               e.get_xy() == (0, 0))]                                              
+    # identify id of remaining rectangles based on abscissa and color
+    eps = 10**-8
+    for x_cond in x_order:
+        for h_cond in hue_order:
+            xy = (xl[x_cond, h_cond], 0.)
+            bars = [e for e in rectangles if within_tol(e.get_xy(), xy, eps)]
+            assert len(bars) == 1, (bars, xy)
+            bar = bars[0]
+            bar.set_edgecolor(f(x_cond, h_cond))
+            if not(line_width is None):
+                bar.set_linewidth(line_width)

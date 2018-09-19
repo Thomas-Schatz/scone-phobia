@@ -200,10 +200,12 @@ def fetch_resampled_data(analysis,
     return boot_df
 
 
-def resampling_filts(resample_caching_scheme, mp_folder):
+def resampling_filts(resample_caching_scheme, mp_folder, user_filt=None):
     """
     Function used to specify various way of caching resamples of analysis
     results.
+    It is the responsibility of this function to ensure that all
+    caching filters are consistent with user_filt.
     See apply_analysis below.
     TODO? Could add a scheme where caching is done by type of model.
     """
@@ -212,35 +214,33 @@ def resampling_filts(resample_caching_scheme, mp_folder):
                 if path.splitext(e)[1] == '.pickle']
     if resample_caching_scheme == 'mp_file':
         for mp_fname in mp_files:
-            # we use second arg with default value to avoid weird scope issues 
-            filt = lambda boot_mp_fname, mp_fname=mp_fname:\
-                        mp_fname in boot_mp_fname
-            caching_filts.append((mp_fname, filt))
+            # only use caching filters useful given user-provided filt
+            if (user_filt is None) or user_filt(mp_fname):
+                # use second arg default value to avoid scope issues 
+                filt = lambda boot_mp_fname, mp_fname=mp_fname:\
+                            mp_fname in boot_mp_fname
+                caching_filts.append((mp_fname, filt))
     elif resample_caching_scheme == 'sametestset_mp_filepairs':
         # analysis not assumed symmetric, so we loop over all
         # pairs
         for mp_fname1 in mp_files:
-            metadata1 = dict(parse_res_fname(mp_fname1))
-            for mp_fname2 in mp_files:
-                metadata2 = dict(parse_res_fname(mp_fname2))
-                if metadata1['test set'] == metadata2['test set']:
-                    filt_name = mp_fname1 + '___' + mp_fname2  # hacky
-                    # we use args with default values to avoid scope issues
-                    filt = lambda bname, name1=mp_fname1, name2=mp_fname2: \
-                            name1 in bname or name2 in bname
-                    caching_filts.append((filt_name, filt))
+            # only use caching filters useful given user-provided filt
+            if user_filt(mp_fname1):
+                metadata1 = dict(parse_res_fname(mp_fname1))
+                for mp_fname2 in mp_files:
+                    # only use caching filters useful given user-provided filt
+                    if user_filt(mp_fname2):
+                        metadata2 = dict(parse_res_fname(mp_fname2))
+                        if metadata1['test set'] == metadata2['test set']:
+                            filt_name = mp_fname1 + '___' + mp_fname2  # hacky
+                            # use args default values to avoid scope issues
+                            filt = lambda bname, n1=mp_fname1, n2=mp_fname2: \
+                                    n1 in bname or n2 in bname
+                            caching_filts.append((filt_name, filt))
     else:
         raise ValueError(('Unsupported resample caching scheme '
                           '{}'.format(resample_caching_scheme)))
     return caching_filts
-
-
-def is_satisfiable(filt, mp_folder):
-    """Check if there is any pickle in mp_folder satisfying filt"""
-    mp_files = [path.splitext(e)[0] for e in os.listdir(mp_folder)
-                if path.splitext(e)[1] == '.pickle']
-    satisfiable = any([filt(f) for f in mp_files])
-    return satisfiable
 
 
 def apply_analysis(analysis, mp_folder,
@@ -319,24 +319,24 @@ def apply_analysis(analysis, mp_folder,
                                      encoding=resampled_pickle_encoding,
                                      add_metadata=add_metadata))
         else:
-            caching_filts = resampling_filts(resample_caching_scheme, mp_folder)
+            caching_filts = resampling_filts(resample_caching_scheme,
+                                             mp_folder,
+                                             user_filt=filt)
             assert not(analysis_folder is None)
             for filt_name, caching_filt in caching_filts:
+                # keep and_filt in case we add other resampling caching schemes
+                # where the caching filts are defined more coarsely than some
+                # possible user-provided filters.
                 and_filt = lambda mp_fname, f1=filt, f2=caching_filt:\
                                 f1(mp_fname) and f2(mp_fname)
-                if is_satisfiable(and_filt, mp_folder): 
-                    resampling_file = path.join(analysis_folder,
-                                                '{}.pickle'.format(filt_name))
-                    boot_dfs.append(
-                        fetch_resampled_data(analysis, resampling_file,
-                                             resampled_mp_folder,
-                                             filt=and_filt,
-                                             encoding=resampled_pickle_encoding,
-                                             add_metadata=add_metadata))
-                elif verbose:
-                    print(('Could not satisfy caching filter {}'
-                           "Probably because it was excluded by your 'filt' argument"
-                           ).format(filt_name))
+                resampling_file = path.join(analysis_folder,
+                                            '{}.pickle'.format(filt_name))
+                boot_dfs.append(
+                    fetch_resampled_data(analysis, resampling_file,
+                                         resampled_mp_folder,
+                                         filt=and_filt,
+                                         encoding=resampled_pickle_encoding,
+                                         add_metadata=add_metadata))
         boot_df = pandas.concat(boot_dfs)
         # Add resulting standard deviation estimates to main dataframe 
         df = mp_scores.estimate_std(df, boot_df)

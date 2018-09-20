@@ -79,8 +79,11 @@ jupyter notebook
 ```
 The jupyter notebook home will open in your internet browser. From there open the `RL_AmEnglish_example` notebook, select the first cell and run it (with shift+return) to get the analysis results under the form of a pandas DataFrame. Then run the second cell, to plot these results using the seaborn library. 
 
-### Beyond minimal-pairs
+### Writing (and contributing!) new analyses
+TODO
 
+### Beyond minimal-pairs
+TODO
 
 ## Repo organisation
 

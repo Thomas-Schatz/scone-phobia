@@ -66,14 +66,33 @@ def load_df(result_file, cols):
 #############################
 # this would need to be done differently for across speaker tasks
 
+def add_contrast_col(df, cfg):
+    # a utility function
+    if not('contrast' in df):
+        contrast_name = lambda p1, p2: p1+'-'+p2 if p1<=p2 else p2+'-'+p1
+        df['contrast'] = [contrast_name(p1,p2) for p1, p2 in zip(df[cfg['phone_1']],
+                                                                 df[cfg['phone_2']])]
+    return df
+
+
+@load_cfg_from_file
+def drop_asymetric_scores(df, reg_cols, cfg=None):
+    l = len(df)
+    df = add_contrast_col(df)
+    groups = df.groupby(['contrast'] + reg_cols, as_index=False)
+    df = groups.filter(lambda x: len(x) == 2)
+    if len(df) != l:
+        dl = l-len(df)
+        print('{} scores had no matching symetric, they were dropped'.format(dl))
+    return df
+
+
 @load_cfg_from_file
 def symetrize_scores(df, reg_cols, cfg=None):
-    contrast_name = lambda p1, p2: p1+'-'+p2 if p1<=p2 else p2+'-'+p1
-    df['contrast'] = [contrast_name(p1,p2) for p1, p2 in zip(df[cfg['phone_1']],
-                                                             df[cfg['phone_2']])]
+    df = add_contrast_col(df)
     groups = df.groupby(['contrast'] + reg_cols, as_index=False)
-    # check that all results can be symetrized, this is supposed to be the
-    # case give the way we thresholded the item files for the tasks
+    # check that all results can be symetrized
+    # this should be guaranteed since we use drop_asymetric_scores above
     wrong_lengths = {(g, df_g) for g, df_g in groups if len(df_g) != 2}   
     assert not(wrong_lengths), wrong_lengths
     return groups['score'].mean()
@@ -156,6 +175,7 @@ def precompute_mp_scores(in_folder, out_folder, filt=None, cfg=None):
                 raise IOError(("Minimal pair file "
                                "already exists: {}").format(res_file))
             df = load_df(path.join(in_folder, f), reg_cols)
+            df = drop_asymetric_scores(df, reg_cols)
             df = symetrize_scores(df, reg_cols)
             df = minimal_pair_scores(df)
             with open(res_file, 'wb') as fh:
@@ -271,6 +291,7 @@ def resample_mp_score_within_speakers(df, nb_resamples, reg_cols, cfg=None):
             spk_df[speaker_col] = str(j)
             resampled_data.append(spk_df)
         resampled_data = pandas.concat(resampled_data)
+        resampled_data = drop_asymetric_scores(resampled_data, reg_cols)
         mp_scores.append(minimal_pair_scores(symetrize_scores(resampled_data,
                                                               reg_cols)))
     return mp_scores

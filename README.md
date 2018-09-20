@@ -82,9 +82,9 @@ The jupyter notebook home will open in your internet browser. From there open th
 As you will see from the examples, performing an analysis boils down to calling the `apply_analysis` function from the [apply_analyses module](./scone_phobia/utils/apply_analyses.py) with appropriate arguments. Check the comments directly in the `apply_analysis` function definition for more information about available arguments and their utility.
 
 ### Writing (and contributing!) new analyses
-To write your own analysis scripts, you can take inspiration from the [existing ones](scone_phobia/analyses). They are fairly simple pieces of code that take as input a pandas DataFrame containing a bunch of minimal-pair scores and output some analysis result. 
+To write your own analysis scripts, you can take inspiration from the [existing ones](./scone_phobia/analyses). They are fairly simple pieces of code that take as input a pandas DataFrame containing a bunch of minimal-pair scores and output some analysis result. 
 
-When developing new analyses, you might want to get an example of the DataFrame that will be passed as input to your analysis script. You can get one easily by calling the `fetch_data` function from the [apply_analyses module](./scone_phobia/utils/apply_analyses.py) with a "dummy" analysis that just returns its input. For example:
+When developing new analyses, you might want to get an example of the DataFrame that will be passed as input to your analysis script. You can get one easily by calling the `fetch_data` function from the [apply_analyses module](./scone_phobia/utils/apply_analyses.py) with a "dummy" analysis that just returns its input. For example using the following python code:
 ```
 from scone_phobia.utils.apply_analyses import fetch_data
 dummy = lambda x: x
@@ -92,10 +92,15 @@ df = fetch_data(analysis=dummy, mp_folder, filt, encoding, add_metadata))
 ```
 where the `mp_folder`, `filt`, `encoding` and `add_metadata` arguments are the same you would pass to `apply_analysis` (the last three are optional).
 
-Note that for your analysis to be compatible with the resampling mechanism (i.e. if you want to be able to obtain error bars for your analysis) its output should be under the form of a pandas DataFrame.
+Note that, for your analysis to be compatible with the resampling mechanism (i.e. if you want to be able to obtain error bars for your analysis), its output should take the form of a pandas DataFrame.
 
 ### Beyond minimal-pairs
-TODO
+The library currently only supports analyses of minimal-pair discrimination scores (symetrized and averaged over speakers and contexts). If you need more fine-grained analysis, a first step is to just load the raw data, which you can do with the `load_df` function of the [mp_scores module](./scone_phobia/utils/mp_scores.py). For example, in python:
+```
+from scone_phobia.utils.mp_scores import load_df
+raw_df = load_df(filename, by_cols)
+```
+where `filename` is the path to the ABXpy results file of interest and `by_cols` is the **ordered** list of names of the "by" columns in that results file (see the part about config file in the [install section](#install-the-library) above for more information about this).
 
 ## Repo organisation
 

@@ -72,15 +72,27 @@ Note that it is important for the validity of the results to use the same resamp
 ### Perform some analyses and plot the results
 Once minimal-pair scores have been computed (and optionally resampled), you can run existing [analysis scripts](scone_phobia/analyses) (depending on the nature of your data, not all scripts might be applicable, look at the comments within each script to check applicability conditions).
 
-The [examples](./examples) folder contain examples of how to run analyses and plot the results under the form of [jupyter notebook](https://jupyter.org/). They should work out of the box if you have completed the first parts of this tutorial. For example, to run the [RL_AmEnglish](./examples/RL_AmEnglish_example.ipynb) example, do:
+The [examples](./examples) folder contain examples of how to run analyses and plot the results under the form of [jupyter notebooks](https://jupyter.org/). They should work out of the box if you have completed the first parts of this tutorial. For example, to run the [RL_AmEnglish](./examples/RL_AmEnglish_example.ipynb) example, do:
 ```
 cd ../examples
 jupyter notebook
 ```
 The jupyter notebook home will open in your internet browser. From there open the `RL_AmEnglish_example` notebook, select the first cell and run it (with shift+return) to get the analysis results under the form of a pandas DataFrame. Then run the second cell, to plot these results using the seaborn library. 
 
+As you will see from the examples, performing an analysis boils down to calling the `apply_analysis` function from the [apply_analyses module](./scone_phobia/utils/apply_analyses.py) with appropriate arguments. Check the comments directly in the `apply_analysis` function definition for more information about available arguments and their utility.
+
 ### Writing (and contributing!) new analyses
-TODO
+To write your own analysis scripts, you can take inspiration from the [existing ones](scone_phobia/analyses). They are fairly simple pieces of code that take as input a pandas DataFrame containing a bunch of minimal-pair scores and output some analysis result. 
+
+When developing new analyses, you might want to get an example of the DataFrame that will be passed as input to your analysis script. You can get one easily by calling the `fetch_data` function from the [apply_analyses module](./scone_phobia/utils/apply_analyses.py) with a "dummy" analysis that just returns its input. For example:
+```
+from scone_phobia.utils.apply_analyses import fetch_data
+dummy = lambda x: x
+df = fetch_data(analysis=dummy, mp_folder, filt, encoding, add_metadata))
+```
+where the `mp_folder`, `filt`, `encoding` and `add_metadata` arguments are the same you would pass to `apply_analysis` (the last three are optional).
+
+Note that for your analysis to be compatible with the resampling mechanism (i.e. if you want to be able to obtain error bars for your analysis) its output should be under the form of a pandas DataFrame.
 
 ### Beyond minimal-pairs
 TODO

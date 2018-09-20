@@ -31,7 +31,7 @@ Appropriately setup the ABXpy results files you want to analyze on your computer
 
 The main constraint is that the files should follow a naming scheme compatible with your config file, as described in [scone_phobia/utils/apply_analyses.py](scone_phobia/utils/apply_analyses.py) (The general idea is that the metadata for each file should be specified in the file name, or at least be deducible from it).
 
-Here is an example compatible with the template config file, using theABXpy results files from the https://osf.io/jpd74/ OSF project. You need to setup an OSF account, request access to the project and then download the example files (AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__WSJtest__KLdis.txt and AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__WSJtest__KLdis.txt) at https://osf.io/qyrku/download and https://osf.io/9pwg2/download respectively.
+Here is an example compatible with the template config file, using the ABXpy results files from the https://osf.io/jpd74/ OSF project. You need to setup an OSF account, request access to the project and then download the example files (AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__WSJtest__KLdis.txt and AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__WSJtest__KLdis.txt) at https://osf.io/qyrku/download and https://osf.io/9pwg2/download respectively.
 
 Put these files in a directory of your choice, for example:
 ```
@@ -70,20 +70,16 @@ python utils/resample_mp_scores.py ../../ABXpy_results/AMnnet1_tri2_smbr_LMmonom
 Note that it is important for the validity of the results to use the same resampling scheme (number of resamples and random seeds) for each of the result files to be analyzed.
 
 ### Perform some analyses and plot the results
-Once minimal-pair scores have been computed (and optionally resampled), you can run existing [analysis](scone_phobia/analyses) scripts and generate plots (depending on the nature of your data, not all scripts might be applicable, look at the comments within each script to check applicability conditions). You can also take inspiration from the existing examples to write (and contribute!) your own analysis scripts.
+Once minimal-pair scores have been computed (and optionally resampled), you can run existing [analysis scripts](scone_phobia/analyses) (depending on the nature of your data, not all scripts might be applicable, look at the comments within each script to check applicability conditions).
 
-As an example, let us look at discrimination of American English /r/ and /l/ by American English-trained vs Japanese-trained models. If our models are [anything like humans](https://en.wikipedia.org/wiki/Perception_of_English_/r/_and_/l/_by_Japanese_speakers#Perception), Japanese-trained models should have a much harder time making this distinction than American English trained ones.
-
-`AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__WSJtest__KLdis.txt` contains discrimination scores for an Automatic Speech Recognition (ASR) system trained on the Buckeye corpus of American English and tested on the Wall Street Journal corpus of American English. `AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__WSJtest__KLdis.txt` contains scores for the same ASR system tested on the same American English corpus, but trained on the Corpus of Spontaneous Japanese.
-
-The [RL_AmEnglish](./scone_phobia/analyses/RL_AmEnglish.py) analysis can be applied to these results, as illustrated in the [example ipython notebook](./examples/RL_AmEnglish_example.ipynb). For each model, the discriminability of American English /r/ and /l/ is computed as well as two controls: the discriminability of American English /w/ and /y/, which Japanese listeners are not expected to have trouble with, and the average discriminability of all American English consonant contrasts.
-
-To run the example notebook, go the [examples](./examples) directory and launch a jupyter notebook:
+The [examples](./examples) folder contain examples of how to run analyses and plot the results under the form of [jupyter notebook](https://jupyter.org/). They should work out of the box if you have completed the first parts of this tutorial. For example, to run the [RL_AmEnglish](./examples/RL_AmEnglish_example.ipynb) example, do:
 ```
 cd ../examples
 jupyter notebook
 ```
-The jupyter notebook home will open in your internet browser. From there open the `RL_AmEnglish_example` notebook, select the first cell and run it (with shift+return). This will run the [RL_AmEnglish](./scone_phobia/analyses/RL_AmEnglish.py) analysis on the minimal-pair scores obtained from our two example ABXpy results files and display the resulting pandas.Dataframe. Then select the second cell and run it. This will plot our results using the seaborn library.
+The jupyter notebook home will open in your internet browser. From there open the `RL_AmEnglish_example` notebook, select the first cell and run it (with shift+return) to get the analysis results under the form of a pandas DataFrame. Then run the second cell, to plot these results using the seaborn library. 
+
+### Beyond minimal-pairs
 
 
 ## Repo organisation

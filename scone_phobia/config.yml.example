@@ -1,4 +1,6 @@
  # specify appropriate column names as they appear in your ABXpy results file.
+ # ** the 'by' columns (speaker, prev-phone, next-phone) should appear
+ #    in this config file in the same order as they appear in your results file **
 results-file-columns:
   phone_1: phone_1
   phone_2: phone_2

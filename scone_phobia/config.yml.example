@@ -1,4 +1,4 @@
- # specify appropriate column names as they appear in your ABXpy results file.
+# specify appropriate column names as they appear in your ABXpy results file.
 results-file-columns:
   phone_1: phone_1
   phone_2: phone_2

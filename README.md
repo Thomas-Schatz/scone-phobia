@@ -31,7 +31,7 @@ Appropriately setup the ABXpy results files you want to analyze on your computer
 
 The main constraint is that the files should follow a naming scheme compatible with your config file, as described in [scone_phobia/utils/apply_analyses.py](scone_phobia/utils/apply_analyses.py) (The general idea is that the metadata for each file should be specified in the file name, or at least be deducible from it).
 
-Here is an example compatible with the template config file, using the ABXpy results files from the https://osf.io/jpd74/ OSF project. You need to setup an OSF account, request access to the project and then download the example files (AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__WSJtest__KLdis.txt and AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__WSJtest__KLdis.txt) at https://osf.io/qyrku/download and https://osf.io/9pwg2/download respectively.
+Here is an example compatible with the template config file, using the ABXpy results files from the https://osf.io/jpd74/ OSF project. You need to setup an OSF account, request access to the project and then download the example files (AMnnet1_tri2_smbr_LMmonomodel__BUCtrain__WSJtest__KLdis.txt and AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__WSJtest__KLdis.txt) at https://osf.io/tgn9c/download and https://osf.io/d8uxn/download respectively.
 
 Put these files in a directory of your choice, for example:
 ```

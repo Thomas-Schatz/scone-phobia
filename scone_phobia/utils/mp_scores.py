@@ -66,19 +66,19 @@ def load_df(result_file, cols):
 #############################
 # this would need to be done differently for across speaker tasks
 
-def add_contrast_col(df, cfg):
+def add_contrast_col(df, col_phone1, col_phone2):
     # a utility function
     if not('contrast' in df):
         contrast_name = lambda p1, p2: p1+'-'+p2 if p1<=p2 else p2+'-'+p1
-        df['contrast'] = [contrast_name(p1,p2) for p1, p2 in zip(df[cfg['phone_1']],
-                                                                 df[cfg['phone_2']])]
+        df['contrast'] = [contrast_name(p1,p2) for p1, p2 in zip(df[col_phone1],
+                                                                 df[col_phone2])]
     return df
 
 
 @load_cfg_from_file
 def drop_asymetric_scores(df, reg_cols, cfg=None):
     l = len(df)
-    df = add_contrast_col(df)
+    df = add_contrast_col(df, cfg['phone_1'], cfg['phone_2'])
     groups = df.groupby(['contrast'] + reg_cols, as_index=False)
     df = groups.filter(lambda x: len(x) == 2)
     if len(df) != l:
@@ -89,7 +89,7 @@ def drop_asymetric_scores(df, reg_cols, cfg=None):
 
 @load_cfg_from_file
 def symetrize_scores(df, reg_cols, cfg=None):
-    df = add_contrast_col(df)
+    df = add_contrast_col(df, cfg['phone_1'], cfg['phone_2'])
     groups = df.groupby(['contrast'] + reg_cols, as_index=False)
     # check that all results can be symetrized
     # this should be guaranteed since we use drop_asymetric_scores above

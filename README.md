@@ -20,6 +20,7 @@ Then create an appropriate config file. You can take inspiration from the [templ
 ```
 cp ./scone_phobia/config.yml.example ./scone_phobia/config.yml
 ```
+In particular, make sure that **the last three entries** in the 'results-file-columns' field of your config file correspond to the 'BY' columns  of your task (i.e. speaker, previous phone and next phone), **listed in the same order as they appear in your ABXpy results file**.
 
 Finally make sure that the `scone_phobia` module is on your PYTHONPATH (no actual install is needed, although an appropriate `setup.py` could easily be written if somebody wants a hard install):
 ```
@@ -43,7 +44,7 @@ mv AMnnet1_tri2_smbr_LMmonomodel__CSJtrain__WSJtest__KLdis.txt ../ABXpy_results/
 ### Prepare minimal-pair scores
 Computing minimal-pair discrimination errors can take a while, so we do it once and for all.
 
-Using Python with appropriate libraries installed (see [requirements.txt](requirements.txt), the latest [python3-anaconda](https://www.anaconda.com/download/) should be more than enough for example), run:
+Make sure you have Python with appropriate libraries installed on your system, see [requirements.txt](requirements.txt). The latest [python3-anaconda](https://www.anaconda.com/download/) with `oyaml` (`pip install oyaml`) should be more than enough for example. Then run:
 ```
 cd scone_phobia
 mkdir ../../mpscores

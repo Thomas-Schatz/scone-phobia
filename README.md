@@ -18,7 +18,7 @@ cd scone-phobia
 ```
 Then create an appropriate config file. You can take inspiration from the [template config file](scone-phobia/config.yml.example) or use it directly by doing:
 ```
-cp ./scone-phobia/config.yml.example ./scone-phobia/config.yml
+cp ./scone_phobia/config.yml.example ./scone_phobia/config.yml
 ```
 
 Finally make sure that the `scone_phobia` module is on your PYTHONPATH (no actual install is needed, although an appropriate `setup.py` could easily be written if somebody wants a hard install):

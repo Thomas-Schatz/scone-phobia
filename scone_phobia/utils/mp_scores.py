@@ -25,7 +25,7 @@ import pandas
 import os
 import os.path as path
 import pickle
-import yaml
+import oyaml as yaml
 
 
 def load_cfg_from_file(f):
@@ -166,7 +166,7 @@ def precompute_mp_scores(in_folder, out_folder, filt=None, cfg=None):
     """
     if filt is None:
         filt = lambda x: True
-    reg_cols = [cfg['speaker'], cfg['prev-phone'], cfg['next-phone']]
+    reg_cols = list(cfg.values())[2:]  # this relies on cfg being **ordered**
     for f in os.listdir(in_folder):
         model, ext = path.splitext(f)
         if ext == '.txt' and filt(model):

@@ -346,4 +346,6 @@ def apply_analysis(analysis, mp_folder,
         # Add resulting standard deviation estimates to main dataframe 
         df = mp_scores.estimate_std(df, boot_df)
         # TODO: permutation tests
-    return df
+        return df, boot_df
+    else:
+        return df

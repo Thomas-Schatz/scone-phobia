@@ -176,7 +176,8 @@ def fetch_resampled_data(analysis,
                          resampled_mp_folder=None,
                          filt=None,
                          encoding=None,
-                         add_metadata=None):
+                         add_metadata=None,
+                         verbose=0):
     # Getting resampled minimal-pair scores to estimate variability.
     # This can take time so if resampling_file is not None,
     # results are saved once they are computed
@@ -187,7 +188,8 @@ def fetch_resampled_data(analysis,
                                                get_metadata,
                                                filt=filt,
                                                encoding=encoding,
-                                               add_metadata=add_metadata)
+                                               add_metadata=add_metadata,
+                                               verbose=verbose)
     else:
         boot_dfs = mp_scores.resample_analysis_cached(resampling_file,
                                                       analysis,
@@ -195,7 +197,8 @@ def fetch_resampled_data(analysis,
                                                       get_metadata,
                                                       filt=filt,
                                                       encoding=encoding,
-                                                      add_metadata=add_metadata)
+                                                      add_metadata=add_metadata,
+                                                      verbose=verbose)
     boot_df = pandas.concat(boot_dfs)
     return boot_df
 
@@ -251,7 +254,7 @@ def apply_analysis(analysis, mp_folder,
                    analysis_folder=None,
                    pickle_encoding=None,
                    resampled_pickle_encoding="latin1",
-                   verbose=False):
+                   verbose=0):
     """
     analysis: function that takes a pandas dataframe containing all
         required minimal-pair scores and returns the analysis results
@@ -317,7 +320,8 @@ def apply_analysis(analysis, mp_folder,
                                      resampled_mp_folder,
                                      filt=filt,
                                      encoding=resampled_pickle_encoding,
-                                     add_metadata=add_metadata))
+                                     add_metadata=add_metadata,
+                                     verbose=verbose))
         else:
             caching_filts = resampling_filts(resample_caching_scheme,
                                              mp_folder,
@@ -336,7 +340,8 @@ def apply_analysis(analysis, mp_folder,
                                          resampled_mp_folder,
                                          filt=and_filt,
                                          encoding=resampled_pickle_encoding,
-                                         add_metadata=add_metadata))
+                                         add_metadata=add_metadata,
+                                         verbose=verbose))
         boot_df = pandas.concat(boot_dfs)
         # Add resulting standard deviation estimates to main dataframe 
         df = mp_scores.estimate_std(df, boot_df)

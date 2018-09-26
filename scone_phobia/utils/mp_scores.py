@@ -336,7 +336,7 @@ def load_resampled_mp_errors(folder, get_metadata, bootid,
 
 def resample_analysis(analysis, resampled_mp_folder, get_metadata,
                       filt=None, encoding=None, add_metadata=None,
-                      nboot=1000, batchsize=50):
+                      nboot=1000, batchsize=50, verbose=0):
     """
     Carry out the same analysis on various resampled versions of minimal pair
     ABX scores.
@@ -354,8 +354,9 @@ def resample_analysis(analysis, resampled_mp_folder, get_metadata,
     """
     resampled_res = []
     for i in range(nboot):
-        if i % (nboot//10) == 0:
-            print(("{}% of all bootstraps computed").format(100*i//nboot))
+        if verbose > 1:
+            if i % (nboot//10) == 0:
+                print(("{}% of all bootstraps computed").format(100*i//nboot))
         if i % batchsize == 0:   
             df_raws = None
         df, df_raws = load_resampled_mp_errors(resampled_mp_folder,
@@ -375,7 +376,7 @@ def resample_analysis(analysis, resampled_mp_folder, get_metadata,
 def resample_analysis_cached(resampling_file, analysis,
                              resampled_mp_folder=None, get_metadata=None,
                              filt=None, encoding=None, add_metadata=None,
-                             nboot=1000, batchsize=50):
+                             nboot=1000, batchsize=50, verbose=0):
     """
     Same as resample_analysis, but caching the results in intermediate files
     for quick re-use.
@@ -383,19 +384,22 @@ def resample_analysis_cached(resampling_file, analysis,
     This assumes that the output of the analysis is pickable.
     """
     if path.exists(resampling_file):
-        print(("Using existing {} "
-               "Delete this file if you want to recompute it"
-               ).format(resampling_file))
+        if verbose > 0:
+            print(("Using existing {} "
+                   "Delete this file if you want to recompute it"
+                   ).format(resampling_file))
     else:
-        print(("No {} file found, "
-               "computing it"
-               ).format(resampling_file))
+        if verbose > 0:
+            print(("No {} file found, "
+                   "computing it"
+                   ).format(resampling_file))
         assert not(resampled_mp_folder is None) and not(get_metadata is None)
         resampled_res = resample_analysis(analysis, resampled_mp_folder, 
                                           get_metadata, filt=filt,
                                           encoding=encoding,
                                           add_metadata=add_metadata,
-                                          nboot=nboot, batchsize=batchsize)
+                                          nboot=nboot, batchsize=batchsize,
+                                          verbose=verbose)
         with open(resampling_file, 'wb') as fh:
             pickle.dump(resampled_res, fh)      
     with open(resampling_file, 'rb') as fh:

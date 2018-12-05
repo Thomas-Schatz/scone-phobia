@@ -5,7 +5,8 @@ Created on Wed Jun 27 11:07:59 2018
 @author: Thomas Schatz
 
 Testing predictions for minimal pair discrimination 
-on American English r/l with w/y and overall consonant contrast average
+on American English r/l with w/y and
+all consonant contrasts except                                                  `````` r/l average
 as controls.
 
 The main function is RL_AmEnglish.
@@ -56,7 +57,9 @@ def RL_AmEnglish(df):
     del cols[cols.index('error')]
     df_AE = df[ind_AE]
     AE_C = corpora.consonants('American English')
-    ind_C = [np.all([seg in AE_C for seg in con.split("-")])
+    RL = mp_scores.mp_contrast_name('R', 'L')
+    # keep all consonant contrasts but R/L
+    ind_C = [np.all([seg in AE_C for seg in con.split("-")]) and con != RL
                 for con in df_AE['contrast']]
     df_C = df_AE[ind_C].groupby(cols, as_index=False).mean()
     df_C['contrast'] = "all_C"    

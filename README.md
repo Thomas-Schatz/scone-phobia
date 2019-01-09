@@ -8,6 +8,8 @@ This code can be used to analyze data from the OSF project https://osf.io/jpd74/
 
 The only type of errors currently analysed are 'minimal-pair' discrimination errors obtained by symetrizing errors (i.e. averaging errors obtained when A and X are exemplars of phone_1 and B is an exemplar of phone_2 and when A and X are exemplars of phone_2 and B is an exemplar of phone_1) and then averaging them first on speaker and then on (preceding context, following context).
 
+Also, see: https://cheezburger.com/3531456768.
+
 ## Tutorial
 
 ### Install the library

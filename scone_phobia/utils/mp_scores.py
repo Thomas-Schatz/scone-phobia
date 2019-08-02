@@ -44,7 +44,7 @@ def load_cfg_from_file(f):
 #######################
 # Loading raw results #
 #######################
-# Should be changed if the format of results produced changed by ABXpy changes
+# Should be changed if the format of results produced by ABXpy changes
 
 def parse_by(df, by_columns):
     arr = np.array([e for e in map(ast.literal_eval, df['by'])])
@@ -101,23 +101,57 @@ def symetrize_scores(df, reg_cols, cfg=None):
 #################################
 # Computing minimal-pair scores #
 #################################
-# We aggregate on speakers first, then contexts
-# because we are not looking at across speaker variability (at least so far)
-# but we might want to look at what happens in specific contexts
+
+
+def ordered_aggregation(df, *agg_cols_list):
+    # utility function to do structured averaging of scores
+    for agg_cols in agg_cols_list:
+        cols = ['contrast'] + agg_cols
+        groups = df.groupby(cols, as_index=False)
+        df = groups['score'].mean()
+    return df
+
 
 @load_cfg_from_file
-def minimal_pair_scores(df, cfg=None):
+def minimal_pair_scores_spk_first(df, cfg=None):
     """
     Aggregate scores over all talkers and contexts
+    We aggregate on speakers first, then contexts.
+    Probably easier to interpret, but makes it necessary to use resampling
+    to get error bars based on speaker variability.
     """
-     # aggregate on talkers
-    cols = ['contrast', cfg['prev-phone'], cfg['next-phone']]
-    groups = df.groupby(cols, as_index=False)
-    df = groups['score'].mean()
-    # aggregate on context
-    cols = ['contrast']
-    groups = df.groupby(cols, as_index=False)
-    df = groups['score'].mean()
+    spk_agg_cols = [cfg['prev-phone'], cfg['next-phone']]
+    context_agg_cols = []
+    df = ordered_aggregation(df, spk_agg_cols, context_agg_cols)
+    return df
+
+
+@load_cfg_from_file
+def minimal_pair_scores_context_first(df, cfg=None):
+    """
+    Aggregate scores over all talkers and contexts
+    We aggregate on context first, then speakers.
+    Might be less stable, but easier to get variability
+    estimates based on speaker differences.
+    """
+     # aggregate on contexts
+    context_agg_cols = [cfg['speaker']]
+    spk_agg_cols = []
+    df = ordered_aggregation(df, context_agg_cols, spk_agg_cols)
+    return df
+
+
+@load_cfg_from_file
+def minimal_pair_scores_by_context(df, cfg=None):
+    spk_agg_cols = [cfg['prev-phone'], cfg['next-phone']]
+    df = ordered_aggregation(df, spk_agg_cols)
+    return df
+
+
+@load_cfg_from_file
+def minimal_pair_scores_by_spk(df, cfg=None):
+    context_agg_cols = [cfg['speaker']]
+    df = ordered_aggregation(df, context_agg_cols)
     return df
 
 
@@ -149,21 +183,65 @@ def get_mp_error(df, phone_1, phone_2):
     return error
 
 
+@load_cfg_from_file
+def get_mp_con_error(df, phone_1, phone_2, prev_con, next_con):
+    """Function to query a particular minimal-pair ABX error (in %)"""
+    contrast = mp_contrast_name(phone_1, phone_2)
+    ix = np.where((df['contrast'] == contrast) & (df[cfg['prev-phone']] == prev_con) & (df[cfg['next-phone']] == next_con))[0]
+    if ix.size == 0:
+        print("No entry available for minimal-pair {} in context {}".format(contrast, "-".join(prev_con, next_con)))
+        error = np.nan
+    else:
+        line = df.iloc[ix]
+        error = line['error']
+        assert(len(error) <= 1), ("More than one entry "
+                                  "for minimal-pair {} in context {}").format(contrast, "-".join(prev_con, next_con))                        
+        error = error.iloc[0]
+    return error
+
+
+@load_cfg_from_file
+def get_mp_spk_error(df, phone_1, phone_2, spk):
+    """Function to query a particular minimal-pair ABX error (in %)"""
+    contrast = mp_contrast_name(phone_1, phone_2)
+    ix = np.where((df['contrast'] == contrast) & (df[cfg['speaker']] == spk))[0]
+    if ix.size == 0:
+        print("No entry available for minimal-pair {} for speaker {}".format(contrast, spk))
+        error = np.nan
+    else:
+        line = df.iloc[ix]
+        error = line['error']
+        assert(len(error) <= 1), ("More than one entry "
+                                  "for minimal-pair {} for speaker {}").format(contrast, con)                        
+        error = error.iloc[0]
+    return error
+
+
 #####################################
 # Precomputing and saving mp scores #
 #####################################
 
-
 @load_cfg_from_file
-def precompute_mp_scores(in_folder, out_folder, filt=None, cfg=None):
+def precompute_mp_scores(in_folder, out_folder, mp_type='spk_first', filt=None, cfg=None):
     """
     Function to precompute minimal-pair scores for all results file in a folder    
         in_folder : str, folder containing results files from ABXpy.analyze
         out_folder : str, folder where to put pickles containing the mp scores
+        mp_type : specify how to compute minimal-pair scores
         filt : (str -> bool) function, takes an ABXpy results filename 
                 without the extension and decides whether to extract mp scores
                 for that file based on the name
     """
+    if mp_type == 'spk_first':
+        minimal_pair_scores = minimal_pair_scores_spk_first
+    elif mp_type == 'context_first':
+        minimal_pair_scores = minimal_pair_scores_context_first
+    elif mp_type == 'by_spk':
+        minimal_pair_scores = minimal_pair_scores_by_spk
+    elif mp_type == 'by_context':
+        minimal_pair_scores = minimal_pair_scores_by_context
+    else:
+        raise ValueError("Unsupported mp type {}".format(mp_type))
     if filt is None:
         filt = lambda x: True
     reg_cols = list(cfg.values())[2:]  # this relies on cfg being **ordered**
@@ -258,6 +336,13 @@ def load_mp_errors(folder, get_metadata,
 ##################################
 # Resampling minimal-pair scores #
 ##################################
+# This is currently only supported for minimal pairs
+# averaged on spk and context (in that order, otherwise there
+# is no need to resample)
+# (the code might actually produced something meaningful in
+# other cases, but this is untested and would require 
+# changing the call to minimal_pair_scores_spk_first
+# in resample_mp_score_within_speakers)
 
 def resample(items, nb_resamples):
     """
@@ -271,11 +356,14 @@ def resample(items, nb_resamples):
 
 
 @load_cfg_from_file
-def resample_mp_score_within_speakers(df, nb_resamples, reg_cols, cfg=None):
+def resample_mp_score_within_speakers(df, nb_resamples, reg_cols, mp_type='spk_first', cfg=None):
     """
     Resample minimal-pair scores obtained
     in a within speaker task over speakers.
     """
+    if mp_type != 'spk_first':
+        raise ValueError("Resampling over speaker only supported for minimal pairs"
+                         "averaged on spk and context, in that order.")
     speaker_col = cfg['speaker']
     spk_resamples = resample(np.unique(df[speaker_col]), nb_resamples)     
     spk_groups = df.groupby(speaker_col, as_index=False)
@@ -292,8 +380,8 @@ def resample_mp_score_within_speakers(df, nb_resamples, reg_cols, cfg=None):
             resampled_data.append(spk_df)
         resampled_data = pandas.concat(resampled_data)
         resampled_data = drop_asymetric_scores(resampled_data, reg_cols)
-        mp_scores.append(minimal_pair_scores(symetrize_scores(resampled_data,
-                                                              reg_cols)))
+        mp_scores.append(minimal_pair_scores_spk_first(symetrize_scores(resampled_data,
+                                                                        reg_cols)))
     return mp_scores
 
 
@@ -425,28 +513,4 @@ def estimate_std(df, boot_df, resampled_cols=None):
         del df_std[col]
     df = pandas.merge(df, df_std, on=grouping_cols)
     return df
-
-
-########################################################################
-# For later maybe: more specific than averaging over all spk, contexts #
-########################################################################
-"""
-#TODO
-def minimal_pair_scores_specific_context(df, context):
-    #Aggregate scores over all talkers for a given context
-    if corpus in ['GPM', 'GPV', 'BUC']:
-        # GPM, GPV and BUC tasks were compiled a bit differently...
-        cols1 = ['phone_1', 'phone_2', 'prev-phone', 'next-phone', 'phone-class']
-    else:
-        cols1 = ['phone_1', 'phone_2', 'prev-phone', 'next-phone', 'phone-class', 'tone']
-    # aggregate on talkers
-    groups = df.groupby(cols1, as_index=False)
-    df = groups['score'].mean()
-    nb_talkers = groups['score'].size()
-    df['nb_talkers'] = [nb_talkers[e] for e in zip(*[df[col] for col in cols1])]
-    # select specified context
-    ix = np.where(np.logical_and(df['prev-phone'] == context[0], df['next-phone'] == context[1]))[0]
-    df = df.iloc[ix]
-    return df
-"""
 

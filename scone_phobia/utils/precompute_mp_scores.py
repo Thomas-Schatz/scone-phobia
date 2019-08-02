@@ -10,7 +10,7 @@ in a specified folder.
 Usage example:
    cd path/2/ABX/results/folder/
    mkdir minimal_pair
-   python precompute_mpscores.py ./ minimal_pair
+   python precompute_mp_scores.py ./ minimal_pair
 """
 
 import argparse
@@ -24,7 +24,9 @@ if __name__ == '__main__':
     parser.add_argument('out_dir', help="Folder where to store mp scores") 
     parser.add_argument('--overwrite', action='store_true',
                         help=("use this if you want to overwrite existing"
-                              " pickles in out_dir"))               
+                              " pickles in out_dir"))
+    parser.add_argument('--mp_type', default='spk_first',
+                        help="Type of minimal-pair scores to compute")               
     args = parser.parse_args()
     assert path.exists(args.in_dir), \
         "Input folder {} missing".format(args.in_dir)
@@ -40,4 +42,4 @@ if __name__ == '__main__':
                " in {} will not be computed again, use the --overwrite"
                " switch if you want to force them to be computed again."
                ).format(args.out_dir))
-    mp_scores.precompute_mp_scores(args.in_dir, args.out_dir, filt=filt) 
+    mp_scores.precompute_mp_scores(args.in_dir, args.out_dir, filt=filt, mp_type=args.mp_type) 

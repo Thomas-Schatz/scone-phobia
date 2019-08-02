@@ -270,10 +270,10 @@ def apply_analysis(analysis, mp_folder,
         raw mp_scores Dataframe (containing only 'contrast', 'error' and primary
         metadata columns, where primary metadata is as specified in the
         config.yml file) and adds some additional metadata columns to it
-    resampling: whether or not to use resampling. Currently, this only adds
-        resampling-based standard deviation estimate to the analysis results,
-        but it would be easy to compute other resampled quantities, e.g. pairwise
-        permutation tests for differences in scores between two models.
+    resampling: whether or not to use resampling. Currently, this is only
+        supported for minimal pairs averaged on speaker first then on context.
+        This returns the full bootstrapped data and also adds resampling-based
+        standard deviation estimate to the analysis results.
     resample_caching_scheme: if resampling is True, determines whether and how
         to cache resampled analysis results. Caching results on disk is useful:
             - if applying the analysis on resamples takes too long (if there are

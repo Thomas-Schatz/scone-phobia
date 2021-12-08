@@ -52,7 +52,7 @@ def load_cfg_from_file(f):
             dir = path.dirname(path.realpath(__file__))
             cfg_file = path.join(dir, "..", "config.yml")
             with open(cfg_file, 'r') as ymlfile:
-                kwargs['cfg'] = yaml.load(ymlfile)['primary-metadata']
+                kwargs['cfg'] = yaml.load(ymlfile, Loader=yaml.Loader)['primary-metadata']
         return f(*args, **kwargs)
     return wrapper
 

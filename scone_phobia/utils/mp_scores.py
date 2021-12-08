@@ -36,7 +36,7 @@ def load_cfg_from_file(f):
             dir = path.dirname(os.path.realpath(__file__))
             cfg_file = path.join(dir, "..", "config.yml")
             with open(cfg_file, 'r') as ymlfile:
-                kwargs['cfg'] = yaml.load(ymlfile)['results-file-columns']
+                kwargs['cfg'] = yaml.load(ymlfile, Loader=yaml.Loader)['results-file-columns']
         return f(*args, **kwargs)
     return wrapper
 
